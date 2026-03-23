@@ -196,7 +196,7 @@ export function RankProgression({ category }: RankProgressionProps) {
       </CardHeader>
       <CardContent>
         <p className="mb-2 text-xs text-muted-foreground">
-          各ラップ時点での累積タイムによる順位推移。TOP3をハイライト。ホバーで詳細表示。
+          各ラップ時点での累積タイムによる順位推移。TOP3と10位毎の選手をハイライト。ホバーで詳細表示。
         </p>
         <EChart option={option} style={{ width: "100%", height: "500px" }} />
       </CardContent>
