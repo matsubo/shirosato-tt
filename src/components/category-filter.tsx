@@ -3,7 +3,7 @@
 export type CategoryFilter = "ALL" | "200km" | "100km" | "50km";
 
 const CATEGORY_OPTIONS: Array<{ value: CategoryFilter; label: string; color: string }> = [
-  { value: "ALL", label: "ALL", color: "#e2e8f0" },
+  { value: "ALL", label: "ALL", color: "#a78bfa" },
   { value: "200km", label: "200km", color: "#22d3ee" },
   { value: "100km", label: "100km", color: "#4ade80" },
   { value: "50km", label: "50km", color: "#fb923c" },
@@ -33,7 +33,7 @@ export function CategoryFilterBar({ value, onChange }: CategoryFilterBarProps) {
                 isActive
                   ? {
                       backgroundColor: opt.color,
-                      color: opt.value === "ALL" ? "hsl(var(--foreground))" : "#000",
+                      color: "#000",
                       boxShadow: `0 0 12px ${opt.color}40`,
                     }
                   : undefined
