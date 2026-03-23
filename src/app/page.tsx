@@ -1,65 +1,73 @@
-import Image from "next/image";
+import { KpiCards } from "@/components/kpi-cards";
+import { TimeDistribution } from "@/components/time-distribution";
+import { Top10WithLap } from "@/components/top10-with-lap";
+import { StatsCharts } from "@/components/stats-charts";
+import { PaceScatter } from "@/components/pace-scatter";
+import { StabilityRanking } from "@/components/stability-ranking";
+import { AthleteSearch } from "@/components/athlete-search";
+import race from "@/data/race.json";
+import type { RaceMetadata } from "@/lib/types";
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-xl font-bold tracking-tight">{children}</h2>
+  );
+}
 
 export default function Home() {
+  const raceData = race as unknown as RaceMetadata;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="container mx-auto space-y-8 px-4 py-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {raceData.raceName}
+        </h1>
+        <p className="mt-1 text-muted-foreground">
+          {raceData.date} {raceData.location} / {raceData.weather.condition}{" "}
+          {raceData.weather.temperature}℃ 湿度{raceData.weather.humidity}%{" "}
+          {raceData.weather.wind}
+        </p>
+      </div>
+
+      {/* KPI Cards */}
+      <section>
+        <KpiCards />
+      </section>
+
+      {/* Time Distribution */}
+      <section className="space-y-3">
+        <SectionHeader>タイム分布</SectionHeader>
+        <TimeDistribution />
+      </section>
+
+      {/* TOP10 + Lap Chart */}
+      <section className="space-y-3">
+        <SectionHeader>カテゴリ別 TOP10 & ラップタイム推移</SectionHeader>
+        <Top10WithLap />
+      </section>
+
+      {/* Statistics */}
+      <section className="space-y-3">
+        <SectionHeader>統計データ</SectionHeader>
+        <StatsCharts />
+      </section>
+
+      {/* Pace & Stability */}
+      <section className="space-y-3">
+        <SectionHeader>ペース分析 & 安定性</SectionHeader>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PaceScatter />
+          <StabilityRanking />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Athlete Search */}
+      <section className="space-y-3">
+        <SectionHeader>選手一覧</SectionHeader>
+        <AthleteSearch />
+      </section>
+    </main>
   );
 }

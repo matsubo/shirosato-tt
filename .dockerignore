@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+docs/
+scripts/
+tests/
+*.md
+.playwright-mcp/
+x-post-*.png
+ai-tri-*.png
+homepage.png
+athlete-detail.png

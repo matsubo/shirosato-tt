@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw data
+src/data/raw-*.txt
+
+# playwright mcp
+.playwright-mcp/

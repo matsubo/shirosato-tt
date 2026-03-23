@@ -1,0 +1,31 @@
+{
+  "raceName": "第11回 しろさとTT200",
+  "date": "2026-03-22",
+  "location": "城里テストセンター",
+  "weather": {
+    "temperature": 12,
+    "humidity": 55,
+    "wind": "北西 3m/s",
+    "condition": "晴れ"
+  },
+  "categories": [
+    {
+      "name": "200km",
+      "distance": 198.32,
+      "laps": 35,
+      "lapDistance": 5.666
+    },
+    {
+      "name": "100km",
+      "distance": 101.99,
+      "laps": 18,
+      "lapDistance": 5.666
+    },
+    {
+      "name": "50km",
+      "distance": 51,
+      "laps": 9,
+      "lapDistance": 5.667
+    }
+  ]
+}
