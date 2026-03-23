@@ -12,7 +12,6 @@ import { CategoryFilterBar } from "@/components/category-filter";
 import { SpeedGauge } from "@/components/speed-gauge";
 import { TimeBoxplot } from "@/components/time-boxplot";
 import { LapHeatmap } from "@/components/lap-heatmap";
-import { AllLapsChart } from "@/components/all-laps-chart";
 import { RankProgression } from "@/components/rank-progression";
 import type { CategoryFilter } from "@/components/category-filter";
 import race from "@/data/race.json";
@@ -81,20 +80,14 @@ export default function Home() {
         <SectionHeader>タイム分布</SectionHeader>
         <div className="grid gap-4 lg:grid-cols-2">
           <TimeDistribution category={category} />
-          <TimeBoxplot />
+          <TimeBoxplot category={category} />
         </div>
       </section>
 
       {/* TOP10 + Lap Chart */}
       <section className="space-y-3">
-        <SectionHeader>カテゴリ別 TOP10 &amp; ラップタイム推移</SectionHeader>
+        <SectionHeader>TOP10 &amp; ラップタイム推移</SectionHeader>
         <Top10WithLap category={category} />
-      </section>
-
-      {/* All Laps Chart */}
-      <section className="space-y-3">
-        <SectionHeader>全選手ラップタイム推移</SectionHeader>
-        <AllLapsChart category={category} />
       </section>
 
       {/* Rank Progression */}

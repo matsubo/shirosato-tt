@@ -2,16 +2,24 @@
 
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, CATEGORY_COLORS } from "@/components/echart";
+import { EChart, useChartTheme } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
 import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { timeToSeconds, secondsToTime } from "@/lib/time-utils";
+import type { CategoryFilter } from "@/components/category-filter";
 
-function calcBoxplot(values: number[]): [number, number, number, number, number] {
+const AGE_DECADES = ["10代", "20代", "30代", "40代", "50代", "60代"];
+
+function extractDecade(ageCategory: string): string {
+  const match = ageCategory.match(/^(\d+代)/);
+  return match ? match[1] : "";
+}
+
+function calcBoxplot(values: number[]): [number, number, number, number, number] | null {
   const sorted = [...values].sort((a, b) => a - b);
   const n = sorted.length;
-  if (n === 0) return [0, 0, 0, 0, 0];
+  if (n < 3) return null;
 
   const q1Idx = Math.floor(n * 0.25);
   const q2Idx = Math.floor(n * 0.5);
@@ -28,37 +36,71 @@ function calcBoxplot(values: number[]): [number, number, number, number, number]
   return [lower, q1, median, q3, upper];
 }
 
-export function TimeBoxplot() {
+interface TimeBoxplotProps {
+  category: CategoryFilter;
+}
+
+export function TimeBoxplot({ category }: TimeBoxplotProps) {
   const theme = useChartTheme();
 
   const option: EChartsOption = useMemo(() => {
     const allData = results as unknown as AthleteResult[];
-    const categories: Array<"200km" | "100km" | "50km"> = [
-      "200km",
-      "100km",
-      "50km",
-    ];
+    const catData = allData.filter(
+      (r) =>
+        r.category === category &&
+        (r.status === "finished" || r.status === "OPEN") &&
+        r.totalTime &&
+        r.ageCategory
+    );
 
-    const boxData: Array<[number, number, number, number, number]> = [];
-    const outlierData: Array<[number, number]> = [];
+    const MALE_COLOR = "#22d3ee";
+    const FEMALE_COLOR = "#f472b6";
 
-    for (let i = 0; i < categories.length; i++) {
-      const cat = categories[i];
-      const finished = allData.filter(
-        (r) => r.category === cat && r.status === "finished" && r.totalTime
+    // Build boxplot data per age decade, split by gender
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const maleBoxData: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const femaleBoxData: any[] = [];
+    const maleOutliers: Array<[number, number]> = [];
+    const femaleOutliers: Array<[number, number]> = [];
+
+    for (let i = 0; i < AGE_DECADES.length; i++) {
+      const decade = AGE_DECADES[i];
+
+      // Male
+      const males = catData.filter(
+        (r) => r.gender === "男" && extractDecade(r.ageCategory) === decade
       );
-      const times = finished.map((r) => timeToSeconds(r.totalTime!) / 60);
+      const maleTimes = males.map((r) => timeToSeconds(r.totalTime!) / 60);
+      const maleBox = calcBoxplot(maleTimes);
+      maleBoxData.push(maleBox ?? "-");
 
-      const [lower, q1, median, q3, upper] = calcBoxplot(times);
-      boxData.push([lower, q1, median, q3, upper]);
+      if (maleBox) {
+        for (const t of maleTimes) {
+          if (t < maleBox[0] || t > maleBox[4]) {
+            maleOutliers.push([i, t]);
+          }
+        }
+      }
 
-      // Outliers
-      for (const t of times) {
-        if (t < lower || t > upper) {
-          outlierData.push([i, t]);
+      // Female
+      const females = catData.filter(
+        (r) => r.gender === "女" && extractDecade(r.ageCategory) === decade
+      );
+      const femaleTimes = females.map((r) => timeToSeconds(r.totalTime!) / 60);
+      const femaleBox = calcBoxplot(femaleTimes);
+      femaleBoxData.push(femaleBox ?? "-");
+
+      if (femaleBox) {
+        for (const t of femaleTimes) {
+          if (t < femaleBox[0] || t > femaleBox[4]) {
+            femaleOutliers.push([i, t]);
+          }
         }
       }
     }
+
+    const fmt = (v: number) => secondsToTime(Math.round(v * 60));
 
     return {
       tooltip: {
@@ -69,32 +111,39 @@ export function TimeBoxplot() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formatter: (params: any) => {
           if (params.componentType === "series") {
-            if (Array.isArray(params.value) && params.value.length === 5) {
+            if (params.seriesType === "boxplot" && Array.isArray(params.value) && params.value.length === 5) {
               const [lower, q1, median, q3, upper] = params.value;
-              const fmt = (v: number) => secondsToTime(Math.round(v * 60));
-              return `<div style="font-weight:600">${categories[params.dataIndex]}</div>
+              const gender = params.seriesName;
+              return `<div style="font-weight:600">${AGE_DECADES[params.dataIndex]} ${gender}</div>
                       <div>上限: ${fmt(upper)}</div>
                       <div>Q3: ${fmt(q3)}</div>
                       <div>中央値: ${fmt(median)}</div>
                       <div>Q1: ${fmt(q1)}</div>
                       <div>下限: ${fmt(lower)}</div>`;
             }
-            const [catIdx, val] = params.value;
-            return `${categories[catIdx]}: ${secondsToTime(Math.round(val * 60))}`;
+            if (params.seriesType === "scatter") {
+              const [idx, val] = params.value;
+              return `${AGE_DECADES[idx]}: ${fmt(val)}`;
+            }
           }
           return "";
         },
       },
-      grid: { top: 20, right: 20, bottom: 10, left: 70 },
+      legend: {
+        data: ["男性", "女性"],
+        bottom: 0,
+        textStyle: { color: theme.subTextColor, fontSize: 11 },
+      },
+      grid: { top: 20, right: 20, bottom: 40, left: 70 },
       xAxis: {
         type: "category",
-        data: categories,
+        data: AGE_DECADES,
         axisLabel: { fontSize: 12, color: theme.subTextColor },
         axisLine: { lineStyle: { color: theme.borderColor } },
       },
       yAxis: {
         type: "value",
-        name: "タイム (分)",
+        name: "タイム",
         nameTextStyle: { color: theme.subTextColor },
         axisLabel: {
           fontSize: 10,
@@ -109,39 +158,53 @@ export function TimeBoxplot() {
       },
       series: [
         {
+          name: "男性",
           type: "boxplot",
-          data: boxData,
+          data: maleBoxData,
           itemStyle: {
-            color: theme.isDark ? "rgba(34, 211, 238, 0.15)" : "rgba(34, 211, 238, 0.1)",
-            borderColor: CATEGORY_COLORS["200km"],
+            color: theme.isDark ? `${MALE_COLOR}22` : `${MALE_COLOR}15`,
+            borderColor: MALE_COLOR,
             borderWidth: 2,
           },
-          emphasis: {
-            itemStyle: {
-              borderColor: "#fff",
-              borderWidth: 2,
-            },
-          },
-          animationDuration: 800,
         },
         {
-          name: "外れ値",
+          name: "女性",
+          type: "boxplot",
+          data: femaleBoxData,
+          itemStyle: {
+            color: theme.isDark ? `${FEMALE_COLOR}22` : `${FEMALE_COLOR}15`,
+            borderColor: FEMALE_COLOR,
+            borderWidth: 2,
+          },
+        },
+        {
+          name: "男性 外れ値",
           type: "scatter",
-          data: outlierData,
-          symbolSize: 6,
-          itemStyle: { color: "#f87171", opacity: 0.6 },
+          data: maleOutliers,
+          symbolSize: 5,
+          itemStyle: { color: MALE_COLOR, opacity: 0.5 },
+        },
+        {
+          name: "女性 外れ値",
+          type: "scatter",
+          data: femaleOutliers,
+          symbolSize: 5,
+          itemStyle: { color: FEMALE_COLOR, opacity: 0.5 },
         },
       ],
     };
-  }, [theme]);
+  }, [category, theme]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>カテゴリ別タイム分布 (箱ひげ図)</CardTitle>
+        <CardTitle>年代×性別 タイム分布（箱ひげ図）</CardTitle>
       </CardHeader>
       <CardContent>
-        <EChart option={option} style={{ width: "100%", height: "350px" }} />
+        <p className="mb-2 text-xs text-muted-foreground">
+          年代ごとの完走タイム分布を男女別に表示。箱は25-75パーセンタイル、中央線は中央値。
+        </p>
+        <EChart option={option} style={{ width: "100%", height: "380px" }} />
       </CardContent>
     </Card>
   );

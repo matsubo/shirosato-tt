@@ -189,7 +189,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
       <CardContent>
         <EChart
           option={option}
-          style={{ width: "100%", height: `${Math.max(300, endRank - startRank + 1) * 16 + 80}px` }}
+          style={{ width: "100%", height: "500px" }}
         />
       </CardContent>
     </Card>
