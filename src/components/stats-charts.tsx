@@ -18,6 +18,7 @@ import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { timeToSeconds } from "@/lib/time-utils";
 import { calcDeviation } from "@/lib/stats";
+import type { CategoryFilter } from "@/components/category-filter";
 
 const GENDER_COLORS = ["#60a5fa", "#f472b6"];
 
@@ -38,17 +39,23 @@ function extractDecade(ageCategory: string): string {
   return match ? match[1] : ageCategory;
 }
 
-function GenderRatioChart() {
-  const data = results as unknown as AthleteResult[];
+function filterByCategory(data: AthleteResult[], category: CategoryFilter): AthleteResult[] {
+  if (category === "ALL") return data;
+  return data.filter((r) => r.category === category);
+}
+
+function GenderRatioChart({ category }: { category: CategoryFilter }) {
+  const allData = results as unknown as AthleteResult[];
 
   const genderData = useMemo(() => {
+    const data = filterByCategory(allData, category);
     const male = data.filter((r) => r.gender === "男").length;
     const female = data.filter((r) => r.gender === "女").length;
     return [
       { name: "男性", value: male },
       { name: "女性", value: female },
     ];
-  }, [data]);
+  }, [allData, category]);
 
   return (
     <Card>
@@ -87,10 +94,11 @@ function GenderRatioChart() {
   );
 }
 
-function AgeDistributionChart() {
-  const data = results as unknown as AthleteResult[];
+function AgeDistributionChart({ category }: { category: CategoryFilter }) {
+  const allData = results as unknown as AthleteResult[];
 
   const chartData = useMemo(() => {
+    const data = filterByCategory(allData, category);
     const counts: Record<string, number> = {};
     for (const r of data) {
       if (!r.ageCategory) continue;
@@ -101,7 +109,7 @@ function AgeDistributionChart() {
       name: decade,
       count: counts[decade] ?? 0,
     }));
-  }, [data]);
+  }, [allData, category]);
 
   return (
     <Card>
@@ -129,7 +137,7 @@ function AgeDistributionChart() {
                 dataKey="count"
                 position="top"
                 style={{ fontSize: 11, fill: "currentColor" }}
-                formatter={(v) => (Number(v) > 0 ? String(v) : "")}
+                formatter={(v: unknown) => (Number(v) > 0 ? String(v) : "")}
               />
             </Bar>
           </BarChart>
@@ -139,10 +147,11 @@ function AgeDistributionChart() {
   );
 }
 
-function PrefectureDistributionChart() {
-  const data = results as unknown as AthleteResult[];
+function PrefectureDistributionChart({ category }: { category: CategoryFilter }) {
+  const allData = results as unknown as AthleteResult[];
 
   const chartData = useMemo(() => {
+    const data = filterByCategory(allData, category);
     const counts: Record<string, number> = {};
     for (const r of data) {
       if (!r.prefecture) continue;
@@ -152,7 +161,7 @@ function PrefectureDistributionChart() {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 15)
       .map(([name, count]) => ({ name, count }));
-  }, [data]);
+  }, [allData, category]);
 
   return (
     <Card className="sm:col-span-2">
@@ -196,15 +205,19 @@ function PrefectureDistributionChart() {
   );
 }
 
-function DeviationDistributionChart() {
-  const data = results as unknown as AthleteResult[];
+function DeviationDistributionChart({ category }: { category: CategoryFilter }) {
+  const allData = results as unknown as AthleteResult[];
 
   const chartData = useMemo(() => {
-    const categories: Array<"200km" | "100km" | "50km"> = ["200km", "100km", "50km"];
+    const categoriesToProcess: Array<"200km" | "100km" | "50km"> =
+      category === "ALL"
+        ? ["200km", "100km", "50km"]
+        : [category];
+
     const allDeviations: Array<{ deviation: number; category: string }> = [];
 
-    for (const cat of categories) {
-      const finished = data.filter(
+    for (const cat of categoriesToProcess) {
+      const finished = allData.filter(
         (r) => r.category === cat && r.status === "finished" && r.totalTime
       );
       const times = finished.map((r) => timeToSeconds(r.totalTime!));
@@ -223,7 +236,7 @@ function DeviationDistributionChart() {
     }
 
     return bins;
-  }, [data]);
+  }, [allData, category]);
 
   return (
     <Card>
@@ -248,7 +261,7 @@ function DeviationDistributionChart() {
                 dataKey="count"
                 position="top"
                 style={{ fontSize: 11, fill: "currentColor" }}
-                formatter={(v) => (Number(v) > 0 ? String(v) : "")}
+                formatter={(v: unknown) => (Number(v) > 0 ? String(v) : "")}
               />
             </Bar>
           </BarChart>
@@ -258,13 +271,17 @@ function DeviationDistributionChart() {
   );
 }
 
-export function StatsCharts() {
+interface StatsChartsProps {
+  category: CategoryFilter;
+}
+
+export function StatsCharts({ category }: StatsChartsProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <GenderRatioChart />
-      <AgeDistributionChart />
-      <DeviationDistributionChart />
-      <PrefectureDistributionChart />
+      <GenderRatioChart category={category} />
+      <AgeDistributionChart category={category} />
+      <DeviationDistributionChart category={category} />
+      <PrefectureDistributionChart category={category} />
     </div>
   );
 }

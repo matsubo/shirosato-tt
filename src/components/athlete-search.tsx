@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { formatTime } from "@/lib/time-utils";
+import type { CategoryFilter } from "@/components/category-filter";
 
 const CATEGORY_COLORS: Record<string, string> = {
   "200km": "#22d3ee",
@@ -24,16 +25,25 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const CATEGORIES = ["全て", "200km", "100km", "50km"] as const;
 
-export function AthleteSearch() {
-  const data = results as unknown as AthleteResult[];
+interface AthleteSearchProps {
+  category: CategoryFilter;
+}
+
+export function AthleteSearch({ category }: AthleteSearchProps) {
+  const allData = results as unknown as AthleteResult[];
   const [query, setQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("全て");
+  const [localCategoryFilter, setLocalCategoryFilter] = useState<string>("全て");
 
+  // When global category is set, it takes priority; local filter is secondary
   const filtered = useMemo(() => {
-    let list = [...data];
+    let list = [...allData];
 
-    if (categoryFilter !== "全て") {
-      list = list.filter((r) => r.category === categoryFilter);
+    // Apply global category filter first
+    if (category !== "ALL") {
+      list = list.filter((r) => r.category === category);
+    } else if (localCategoryFilter !== "全て") {
+      // Only apply local filter when global is ALL
+      list = list.filter((r) => r.category === localCategoryFilter);
     }
 
     if (query.trim()) {
@@ -56,7 +66,7 @@ export function AthleteSearch() {
     });
 
     return list;
-  }, [data, query, categoryFilter]);
+  }, [allData, query, localCategoryFilter, category]);
 
   return (
     <Card>
@@ -71,29 +81,32 @@ export function AthleteSearch() {
             onChange={(e) => setQuery(e.target.value)}
             className="max-w-xs"
           />
-          <div className="flex gap-1.5">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategoryFilter(cat)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  categoryFilter === cat
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-                style={
-                  categoryFilter === cat && cat !== "全て"
-                    ? {
-                        backgroundColor: CATEGORY_COLORS[cat],
-                        color: "#000",
-                      }
-                    : undefined
-                }
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          {/* Show local category filter only when global is ALL */}
+          {category === "ALL" && (
+            <div className="flex gap-1.5">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setLocalCategoryFilter(cat)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    localCategoryFilter === cat
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                  style={
+                    localCategoryFilter === cat && cat !== "全て"
+                      ? {
+                          backgroundColor: CATEGORY_COLORS[cat],
+                          color: "#000",
+                        }
+                      : undefined
+                  }
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
           <span className="text-xs text-muted-foreground">
             {filtered.length}件
           </span>

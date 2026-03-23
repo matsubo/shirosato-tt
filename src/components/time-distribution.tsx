@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { timeToSeconds } from "@/lib/time-utils";
+import type { CategoryFilter } from "@/components/category-filter";
 
 const CATEGORY_CONFIG: Record<
   string,
@@ -97,7 +98,7 @@ function CategoryChart({ category }: { category: string }) {
             dataKey="count"
             position="top"
             style={{ fontSize: 11, fill: "currentColor" }}
-            formatter={(v) => (Number(v) > 0 ? String(v) : "")}
+            formatter={(v: unknown) => (Number(v) > 0 ? String(v) : "")}
           />
           {data.map((_, index) => (
             <Cell key={index} fill={config.color} fillOpacity={0.8} />
@@ -108,8 +109,26 @@ function CategoryChart({ category }: { category: string }) {
   );
 }
 
-export function TimeDistribution() {
+interface TimeDistributionProps {
+  category: CategoryFilter;
+}
+
+export function TimeDistribution({ category }: TimeDistributionProps) {
   const [active, setActive] = useState<string | number>("200km");
+
+  // When a specific category is selected, show only that category
+  if (category !== "ALL") {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>タイム分布</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CategoryChart category={category} />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

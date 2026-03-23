@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
+import type { CategoryFilter } from "@/components/category-filter";
 
 const CATEGORY_COLORS: Record<string, string> = {
   "200km": "#22d3ee",
@@ -40,22 +41,28 @@ function KpiCard({ label, value, accent, sub }: KpiCardProps) {
   );
 }
 
-export function KpiCards() {
-  const data = results as unknown as AthleteResult[];
+interface KpiCardsProps {
+  category: CategoryFilter;
+}
+
+export function KpiCards({ category }: KpiCardsProps) {
+  const allData = results as unknown as AthleteResult[];
+  const data = category === "ALL"
+    ? allData
+    : allData.filter((r) => r.category === category);
 
   const total = data.length;
   const finishers = data.filter((r) => r.status === "finished").length;
-  const finishRate = ((finishers / total) * 100).toFixed(1);
+  const finishRate = total > 0 ? ((finishers / total) * 100).toFixed(1) : "0.0";
   const dnfCount = data.filter((r) => r.status === "DNF").length;
 
-  const categories: Array<"200km" | "100km" | "50km"> = [
-    "200km",
-    "100km",
-    "50km",
-  ];
+  const categoriesToShow: Array<"200km" | "100km" | "50km"> =
+    category === "ALL"
+      ? ["200km", "100km", "50km"]
+      : [category];
 
-  const fastestByCategory = categories.map((cat) => {
-    const finished = data.filter(
+  const fastestByCategory = categoriesToShow.map((cat) => {
+    const finished = allData.filter(
       (r) => r.category === cat && r.status === "finished" && typeof r.rank === "number"
     );
     finished.sort((a, b) => {
@@ -71,8 +78,12 @@ export function KpiCards() {
     };
   });
 
+  const gridCols = category === "ALL"
+    ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-7"
+    : "grid-cols-2 sm:grid-cols-4 lg:grid-cols-5";
+
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+    <div className={`grid gap-3 ${gridCols}`}>
       <KpiCard label="参加者数" value={total} />
       <KpiCard label="完走者数" value={finishers} />
       <KpiCard label="完走率" value={`${finishRate}%`} />

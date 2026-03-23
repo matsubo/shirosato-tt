@@ -15,6 +15,7 @@ import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { lapTimeToMinutes, formatTime } from "@/lib/time-utils";
 import { calcCV } from "@/lib/stats";
+import type { CategoryFilter } from "@/components/category-filter";
 
 const CATEGORY_COLORS: Record<string, string> = {
   "200km": "#22d3ee",
@@ -22,11 +23,19 @@ const CATEGORY_COLORS: Record<string, string> = {
   "50km": "#fb923c",
 };
 
-export function StabilityRanking() {
-  const data = results as unknown as AthleteResult[];
+interface StabilityRankingProps {
+  category: CategoryFilter;
+}
+
+export function StabilityRanking({ category }: StabilityRankingProps) {
+  const allData = results as unknown as AthleteResult[];
 
   const ranking = useMemo(() => {
-    const finished = data.filter(
+    const base = category === "ALL"
+      ? allData
+      : allData.filter((r) => r.category === category);
+
+    const finished = base.filter(
       (r) => r.status === "finished" && r.lapTimes.length > 1
     );
 
@@ -44,7 +53,7 @@ export function StabilityRanking() {
 
     withCV.sort((a, b) => a.cv - b.cv);
     return withCV.slice(0, 10);
-  }, [data]);
+  }, [allData, category]);
 
   return (
     <Card>

@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { lapTimeToMinutes } from "@/lib/time-utils";
+import type { CategoryFilter } from "@/components/category-filter";
 
 const CATEGORY_CONFIG: Record<
   string,
@@ -43,14 +44,22 @@ function calcHalfAvg(
   return total / laps.length;
 }
 
-export function PaceScatter() {
+interface PaceScatterProps {
+  category: CategoryFilter;
+}
+
+export function PaceScatter({ category }: PaceScatterProps) {
   const data = results as unknown as AthleteResult[];
+
+  const categoriesToShow: Array<"200km" | "100km" | "50km"> =
+    category === "ALL"
+      ? ["200km", "100km", "50km"]
+      : [category];
 
   const scatterData = useMemo(() => {
     const byCategory: Record<string, PacePoint[]> = {};
-    const categories: Array<"200km" | "100km" | "50km"> = ["200km", "100km", "50km"];
 
-    for (const cat of categories) {
+    for (const cat of categoriesToShow) {
       const config = CATEGORY_CONFIG[cat];
       const finished = data.filter(
         (r) =>
@@ -77,7 +86,7 @@ export function PaceScatter() {
     }
 
     return byCategory;
-  }, [data]);
+  }, [data, categoriesToShow]);
 
   const allPoints = Object.values(scatterData).flat();
   const allValues = allPoints.flatMap((p) => [p.firstHalf, p.secondHalf]);
@@ -140,7 +149,7 @@ export function PaceScatter() {
               }}
             />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            {(["200km", "100km", "50km"] as const).map((cat) => (
+            {categoriesToShow.map((cat) => (
               <Scatter
                 key={cat}
                 name={cat}

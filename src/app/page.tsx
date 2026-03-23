@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { KpiCards } from "@/components/kpi-cards";
 import { TimeDistribution } from "@/components/time-distribution";
 import { Top10WithLap } from "@/components/top10-with-lap";
@@ -5,6 +8,8 @@ import { StatsCharts } from "@/components/stats-charts";
 import { PaceScatter } from "@/components/pace-scatter";
 import { StabilityRanking } from "@/components/stability-ranking";
 import { AthleteSearch } from "@/components/athlete-search";
+import { CategoryFilterBar } from "@/components/category-filter";
+import type { CategoryFilter } from "@/components/category-filter";
 import race from "@/data/race.json";
 import type { RaceMetadata } from "@/lib/types";
 
@@ -16,6 +21,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 
 export default function Home() {
   const raceData = race as unknown as RaceMetadata;
+  const [category, setCategory] = useState<CategoryFilter>("ALL");
 
   return (
     <main className="container mx-auto space-y-8 px-4 py-8">
@@ -31,42 +37,45 @@ export default function Home() {
         </p>
       </div>
 
+      {/* Category Filter */}
+      <CategoryFilterBar value={category} onChange={setCategory} />
+
       {/* KPI Cards */}
       <section>
-        <KpiCards />
+        <KpiCards category={category} />
       </section>
 
       {/* Time Distribution */}
       <section className="space-y-3">
         <SectionHeader>タイム分布</SectionHeader>
-        <TimeDistribution />
+        <TimeDistribution category={category} />
       </section>
 
       {/* TOP10 + Lap Chart */}
       <section className="space-y-3">
         <SectionHeader>カテゴリ別 TOP10 & ラップタイム推移</SectionHeader>
-        <Top10WithLap />
+        <Top10WithLap category={category} />
       </section>
 
       {/* Statistics */}
       <section className="space-y-3">
         <SectionHeader>統計データ</SectionHeader>
-        <StatsCharts />
+        <StatsCharts category={category} />
       </section>
 
       {/* Pace & Stability */}
       <section className="space-y-3">
         <SectionHeader>ペース分析 & 安定性</SectionHeader>
         <div className="grid gap-4 lg:grid-cols-2">
-          <PaceScatter />
-          <StabilityRanking />
+          <PaceScatter category={category} />
+          <StabilityRanking category={category} />
         </div>
       </section>
 
       {/* Athlete Search */}
       <section className="space-y-3">
         <SectionHeader>選手一覧</SectionHeader>
-        <AthleteSearch />
+        <AthleteSearch category={category} />
       </section>
     </main>
   );
