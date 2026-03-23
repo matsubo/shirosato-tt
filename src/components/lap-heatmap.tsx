@@ -48,9 +48,12 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
       (currentPage + 1) * PAGE_SIZE
     );
 
-    const maxLaps = Math.max(...paged.map((r) => r.lapTimes.length));
+    // Reverse so rank 1 is at the top (ECharts Y axis goes bottom→top)
+    const reversed = [...paged].reverse();
+
+    const maxLaps = Math.max(...reversed.map((r) => r.lapTimes.length));
     const lapLabels = Array.from({ length: maxLaps }, (_, i) => `${i + 1}`);
-    const riderLabels = paged.map(
+    const riderLabels = reversed.map(
       (r) =>
         `${typeof r.rank === "number" ? r.rank : r.status}位 ${r.name}`
     );
@@ -59,9 +62,9 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
     let minSec = Infinity;
     let maxSec = -Infinity;
 
-    for (let ri = 0; ri < paged.length; ri++) {
+    for (let ri = 0; ri < reversed.length; ri++) {
       for (let li = 0; li < maxLaps; li++) {
-        const lt = paged[ri].lapTimes.find(
+        const lt = reversed[ri].lapTimes.find(
           (l: { lap: number }) => l.lap === li + 1
         );
         if (lt) {

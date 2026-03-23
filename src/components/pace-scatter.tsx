@@ -38,9 +38,10 @@ function calcHalfAvg(
 
 interface PaceScatterProps {
   category: CategoryFilter;
+  highlightNo?: number;
 }
 
-export function PaceScatter({ category }: PaceScatterProps) {
+export function PaceScatter({ category, highlightNo }: PaceScatterProps) {
   const data = results as unknown as AthleteResult[];
   const theme = useChartTheme();
 
@@ -141,26 +142,64 @@ export function PaceScatter({ category }: PaceScatterProps) {
           silent: true,
           z: 1,
         },
-        // Scatter series per category
+        // Scatter series: other athletes
         ...categoriesToShow.map((cat) => ({
           name: cat,
           type: "scatter" as const,
-          data: (scatterData[cat] ?? []).map((p) => ({
-            value: [p.firstHalf, p.secondHalf],
-            name: p.name,
-            no: p.no,
-            category: p.category,
-          })),
+          data: (scatterData[cat] ?? [])
+            .filter((p) => p.no !== highlightNo)
+            .map((p) => ({
+              value: [p.firstHalf, p.secondHalf],
+              name: p.name,
+              no: p.no,
+              category: p.category,
+            })),
           symbolSize: 8,
           itemStyle: {
             color: CATEGORY_CONFIG[cat].color,
-            opacity: 0.7,
+            opacity: highlightNo ? 0.25 : 0.7,
           },
           emphasis: {
             itemStyle: { opacity: 1, borderWidth: 2, borderColor: "#fff" },
           },
           z: 2,
         })),
+        // Highlighted athlete (if specified)
+        ...(highlightNo
+          ? categoriesToShow.map((cat) => {
+              const point = (scatterData[cat] ?? []).find((p) => p.no === highlightNo);
+              if (!point) return null;
+              return {
+                name: point.name,
+                type: "scatter" as const,
+                data: [
+                  {
+                    value: [point.firstHalf, point.secondHalf],
+                    name: point.name,
+                    no: point.no,
+                    category: point.category,
+                  },
+                ],
+                symbolSize: 16,
+                itemStyle: {
+                  color: "#fbbf24",
+                  borderColor: "#fff",
+                  borderWidth: 2,
+                  opacity: 1,
+                },
+                label: {
+                  show: true,
+                  formatter: point.name,
+                  position: "top" as const,
+                  fontSize: 12,
+                  fontWeight: "bold" as const,
+                  color: "#fbbf24",
+                },
+                z: 10,
+              };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            }).filter(Boolean) as any[]
+          : []),
       ],
     }),
     [categoriesToShow, scatterData, minVal, maxVal, theme]

@@ -14,6 +14,7 @@ import { CdACalculator } from "@/components/cda-calculator";
 import { AiComment } from "@/components/ai-comment";
 import { SingleLapChart } from "@/components/single-lap-chart";
 import { PacingWaterfall } from "@/components/pacing-waterfall";
+import { PaceScatter } from "@/components/pace-scatter";
 import { timeToSeconds } from "@/lib/time-utils";
 import { mean } from "@/lib/stats";
 
@@ -222,6 +223,11 @@ export default async function AthletePage({
 
             {/* Pacing Waterfall */}
             <PacingWaterfall athlete={athlete} />
+
+            {/* Pace Scatter with highlight */}
+            {isFinished && (
+              <PaceScatter category={athlete.category} highlightNo={athlete.no} />
+            )}
 
             {isFinished && (
               <PercentileBar
