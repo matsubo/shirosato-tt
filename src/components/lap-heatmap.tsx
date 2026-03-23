@@ -40,6 +40,20 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
   const totalPages = Math.ceil(allFinished.length / PAGE_SIZE);
   const currentPage = Math.min(page, totalPages - 1);
 
+  // Compute global min/max across ALL athletes for consistent color scale
+  const { globalMin, globalMax } = useMemo(() => {
+    let min = Infinity;
+    let max = -Infinity;
+    for (const r of allFinished) {
+      for (const l of r.lapTimes) {
+        const sec = timeToSeconds(l.time);
+        if (sec < min) min = sec;
+        if (sec > max) max = sec;
+      }
+    }
+    return { globalMin: min, globalMax: max };
+  }, [allFinished]);
+
   const option: EChartsOption | null = useMemo(() => {
     if (allFinished.length === 0) return null;
 
@@ -59,8 +73,6 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
     );
 
     const heatmapData: Array<[number, number, number | null]> = [];
-    let minSec = Infinity;
-    let maxSec = -Infinity;
 
     for (let ri = 0; ri < reversed.length; ri++) {
       for (let li = 0; li < maxLaps; li++) {
@@ -70,8 +82,6 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
         if (lt) {
           const sec = timeToSeconds(lt.time);
           heatmapData.push([li, ri, sec]);
-          if (sec < minSec) minSec = sec;
-          if (sec > maxSec) maxSec = sec;
         } else {
           heatmapData.push([li, ri, null]);
         }
@@ -115,8 +125,8 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
         splitArea: { show: true },
       },
       visualMap: {
-        min: minSec,
-        max: maxSec,
+        min: globalMin,
+        max: globalMax,
         calculable: true,
         orient: "horizontal",
         left: "center",
@@ -148,7 +158,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
         },
       ],
     };
-  }, [category, allFinished, currentPage, theme]);
+  }, [category, allFinished, currentPage, theme, globalMin, globalMax]);
 
   if (option === null) return null;
 
