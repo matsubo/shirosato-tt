@@ -17,7 +17,7 @@ export function AiComment({ comment }: AiCommentProps) {
       </CardHeader>
       <CardContent>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-          {comment ?? "コメント準備中..."}
+          {comment ?? "完走データがないため、AI分析コメントは生成されていません。"}
         </p>
       </CardContent>
     </Card>
