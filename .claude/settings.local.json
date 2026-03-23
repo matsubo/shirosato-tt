@@ -4,7 +4,16 @@
       "mcp__plugin_playwright_playwright__browser_navigate",
       "mcp__plugin_playwright_playwright__browser_take_screenshot",
       "mcp__plugin_playwright_playwright__browser_snapshot",
-      "mcp__plugin_playwright_playwright__browser_click"
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_close",
+      "mcp__plugin_playwright_playwright__browser_press_key",
+      "mcp__coolify__list_servers",
+      "mcp__coolify__projects",
+      "mcp__coolify__environments",
+      "mcp__coolify__github_apps",
+      "mcp__coolify__application",
+      "mcp__coolify__deploy",
+      "mcp__coolify__deployment"
     ]
   }
 }

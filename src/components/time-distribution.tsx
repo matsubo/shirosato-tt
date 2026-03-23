@@ -1,18 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  LabelList,
-} from "recharts";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EChart, useChartTheme, CATEGORY_COLORS } from "@/components/echart";
+import type { EChartsOption } from "@/components/echart";
 import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { timeToSeconds } from "@/lib/time-utils";
@@ -22,15 +14,12 @@ const CATEGORY_CONFIG: Record<
   string,
   { color: string; binMinutes: number; startHours: number; endHours: number }
 > = {
-  "200km": { color: "#22d3ee", binMinutes: 15, startHours: 4.5, endHours: 9 },
-  "100km": { color: "#4ade80", binMinutes: 10, startHours: 2, endHours: 5 },
-  "50km": { color: "#fb923c", binMinutes: 5, startHours: 1, endHours: 3 },
+  "200km": { color: CATEGORY_COLORS["200km"], binMinutes: 15, startHours: 4.5, endHours: 9 },
+  "100km": { color: CATEGORY_COLORS["100km"], binMinutes: 10, startHours: 2, endHours: 5 },
+  "50km": { color: CATEGORY_COLORS["50km"], binMinutes: 5, startHours: 1, endHours: 3 },
 };
 
-function buildBins(
-  category: string,
-  data: AthleteResult[]
-) {
+function buildBins(category: string, data: AthleteResult[]) {
   const config = CATEGORY_CONFIG[category];
   if (!config) return [];
 
@@ -68,45 +57,85 @@ function CategoryChart({ category }: { category: string }) {
     [category]
   );
   const config = CATEGORY_CONFIG[category];
+  const theme = useChartTheme();
 
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
-        <XAxis
-          dataKey="label"
-          tick={{ fontSize: 11, fill: "currentColor" }}
-          angle={-45}
-          textAnchor="end"
-          height={60}
-          stroke="currentColor"
-        />
-        <YAxis
-          tick={{ fontSize: 12, fill: "currentColor" }}
-          allowDecimals={false}
-          stroke="currentColor"
-        />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: "hsl(var(--popover, 220 20% 14%))",
-            border: "1px solid hsl(var(--border, 220 20% 25%))",
-            borderRadius: "8px",
-            color: "inherit",
-          }}
-        />
-        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-          <LabelList
-            dataKey="count"
-            position="top"
-            style={{ fontSize: 11, fill: "currentColor" }}
-            formatter={(v: unknown) => (Number(v) > 0 ? String(v) : "")}
-          />
-          {data.map((_, index) => (
-            <Cell key={index} fill={config.color} fillOpacity={0.8} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+  const option: EChartsOption = useMemo(
+    () => ({
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        backgroundColor: theme.bgColor,
+        borderColor: theme.borderColor,
+        textStyle: { color: theme.textColor },
+      },
+      grid: {
+        top: 30,
+        right: 10,
+        bottom: 60,
+        left: 40,
+      },
+      xAxis: {
+        type: "category",
+        data: data.map((d) => d.label),
+        axisLabel: {
+          fontSize: 11,
+          color: theme.subTextColor,
+          rotate: 45,
+        },
+        axisLine: { lineStyle: { color: theme.borderColor } },
+      },
+      yAxis: {
+        type: "value",
+        minInterval: 1,
+        axisLabel: { fontSize: 12, color: theme.subTextColor },
+        splitLine: { lineStyle: { color: theme.gridLineColor } },
+      },
+      dataZoom: [
+        {
+          type: "slider",
+          show: data.length > 12,
+          bottom: 5,
+          height: 18,
+          borderColor: theme.borderColor,
+          textStyle: { color: theme.subTextColor },
+        },
+      ],
+      series: [
+        {
+          type: "bar",
+          data: data.map((d) => d.count),
+          itemStyle: {
+            color: {
+              type: "linear",
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: config.color },
+                { offset: 1, color: config.color + "66" },
+              ],
+            },
+            borderRadius: [4, 4, 0, 0],
+          },
+          label: {
+            show: true,
+            position: "top",
+            fontSize: 11,
+            color: theme.subTextColor,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter: (params: any) =>
+              params.value > 0 ? String(params.value) : "",
+          },
+          animationDuration: 600,
+          animationEasing: "elasticOut",
+        },
+      ],
+    }),
+    [data, config.color, theme]
   );
+
+  return <EChart option={option} style={{ width: "100%", height: "300px" }} />;
 }
 
 interface TimeDistributionProps {
@@ -116,7 +145,6 @@ interface TimeDistributionProps {
 export function TimeDistribution({ category }: TimeDistributionProps) {
   const [active, setActive] = useState<string | number>("200km");
 
-  // When a specific category is selected, show only that category
   if (category !== "ALL") {
     return (
       <Card>

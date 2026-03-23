@@ -13,6 +13,9 @@ import { PercentileBar } from "@/components/percentile-bar";
 import { CdACalculator } from "@/components/cda-calculator";
 import { AiComment } from "@/components/ai-comment";
 import { SingleLapChart } from "@/components/single-lap-chart";
+import { PacingWaterfall } from "@/components/pacing-waterfall";
+import { timeToSeconds } from "@/lib/time-utils";
+import { mean } from "@/lib/stats";
 
 const allAthletes = results as AthleteResult[];
 const raceData = race as RaceMetadata;
@@ -45,6 +48,30 @@ export function generateMetadata({
       title: `${athlete.name} No.${athlete.no}${timeStr}${statusStr} | しろさとTT200`,
     };
   });
+}
+
+function getCategoryAvgLaps(
+  category: string,
+  maxLaps: number
+): number[] {
+  const finished = allAthletes.filter(
+    (a) =>
+      a.category === category &&
+      a.status === "finished" &&
+      a.lapTimes.length > 0
+  );
+
+  const avgLaps: number[] = [];
+  for (let lap = 1; lap <= maxLaps; lap++) {
+    const times = finished
+      .map((a) => {
+        const lt = a.lapTimes.find((l) => l.lap === lap);
+        return lt ? timeToSeconds(lt.time) : null;
+      })
+      .filter((t): t is number => t !== null);
+    avgLaps.push(times.length > 0 ? mean(times) : 0);
+  }
+  return avgLaps;
 }
 
 export default async function AthletePage({
@@ -102,11 +129,15 @@ export default async function AthletePage({
   }
 
   const isDNS = athlete.status === "DNS";
-  const isDNF = athlete.status === "DNF";
   const hasLaps = athlete.lapTimes.length > 0;
   const isFinished = athlete.status === "finished" || athlete.status === "OPEN";
 
   const comment = commentsData[String(athlete.no)];
+
+  // Category average laps for comparison
+  const categoryAvgLaps = hasLaps
+    ? getCategoryAvgLaps(athlete.category, athlete.lapTimes.length)
+    : undefined;
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -141,7 +172,10 @@ export default async function AthletePage({
           <>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div className="space-y-6">
-                <SingleLapChart athlete={athlete} />
+                <SingleLapChart
+                  athlete={athlete}
+                  categoryAvgLaps={categoryAvgLaps}
+                />
                 <LapStability athlete={athlete} />
               </div>
               <div className="space-y-6">
@@ -155,6 +189,9 @@ export default async function AthletePage({
                 {hasLaps && <PacingAnalysis athlete={athlete} />}
               </div>
             </div>
+
+            {/* Pacing Waterfall */}
+            <PacingWaterfall athlete={athlete} />
 
             {isFinished && (
               <PercentileBar

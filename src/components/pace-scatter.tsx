@@ -1,17 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-  Legend,
-} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EChart, useChartTheme, CATEGORY_COLORS } from "@/components/echart";
+import type { EChartsOption } from "@/components/echart";
 import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { lapTimeToMinutes } from "@/lib/time-utils";
@@ -21,9 +13,9 @@ const CATEGORY_CONFIG: Record<
   string,
   { color: string; firstHalf: [number, number]; secondHalf: [number, number] }
 > = {
-  "200km": { color: "#22d3ee", firstHalf: [1, 17], secondHalf: [18, 35] },
-  "100km": { color: "#4ade80", firstHalf: [1, 9], secondHalf: [10, 18] },
-  "50km": { color: "#fb923c", firstHalf: [1, 4], secondHalf: [5, 9] },
+  "200km": { color: CATEGORY_COLORS["200km"], firstHalf: [1, 17], secondHalf: [18, 35] },
+  "100km": { color: CATEGORY_COLORS["100km"], firstHalf: [1, 9], secondHalf: [10, 18] },
+  "50km": { color: CATEGORY_COLORS["50km"], firstHalf: [1, 4], secondHalf: [5, 9] },
 };
 
 interface PacePoint {
@@ -50,13 +42,12 @@ interface PaceScatterProps {
 
 export function PaceScatter({ category }: PaceScatterProps) {
   const data = results as unknown as AthleteResult[];
+  const theme = useChartTheme();
 
   const categoriesToShow: Array<"200km" | "100km" | "50km"> =
-    category === "ALL"
-      ? ["200km", "100km", "50km"]
-      : [category];
+    category === "ALL" ? ["200km", "100km", "50km"] : [category];
 
-  const scatterData = useMemo(() => {
+  const { scatterData, minVal, maxVal } = useMemo(() => {
     const byCategory: Record<string, PacePoint[]> = {};
 
     for (const cat of categoriesToShow) {
@@ -85,13 +76,96 @@ export function PaceScatter({ category }: PaceScatterProps) {
       byCategory[cat] = points;
     }
 
-    return byCategory;
+    const allPoints = Object.values(byCategory).flat();
+    const allValues = allPoints.flatMap((p) => [p.firstHalf, p.secondHalf]);
+    const min = allValues.length > 0 ? Math.floor(Math.min(...allValues) - 0.5) : 5;
+    const max = allValues.length > 0 ? Math.ceil(Math.max(...allValues) + 0.5) : 15;
+
+    return { scatterData: byCategory, minVal: min, maxVal: max };
   }, [data, categoriesToShow]);
 
-  const allPoints = Object.values(scatterData).flat();
-  const allValues = allPoints.flatMap((p) => [p.firstHalf, p.secondHalf]);
-  const minVal = allValues.length > 0 ? Math.floor(Math.min(...allValues) - 0.5) : 5;
-  const maxVal = allValues.length > 0 ? Math.ceil(Math.max(...allValues) + 0.5) : 15;
+  const option: EChartsOption = useMemo(
+    () => ({
+      tooltip: {
+        trigger: "item",
+        backgroundColor: theme.bgColor,
+        borderColor: theme.borderColor,
+        textStyle: { color: theme.textColor },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        formatter: (params: any) => {
+          const d = params.data;
+          return `<div style="font-weight:600">${d.name} (#${d.no})</div>
+                  <div>${d.category}</div>
+                  <div>前半平均: ${params.value[0]} 分</div>
+                  <div>後半平均: ${params.value[1]} 分</div>`;
+        },
+      },
+      legend: {
+        data: categoriesToShow,
+        textStyle: { color: theme.subTextColor, fontSize: 12 },
+        bottom: 0,
+      },
+      grid: { top: 10, right: 20, bottom: 40, left: 60 },
+      xAxis: {
+        type: "value",
+        name: "前半平均ラップ (分)",
+        nameLocation: "middle",
+        nameGap: 30,
+        nameTextStyle: { color: theme.subTextColor, fontSize: 12 },
+        min: minVal,
+        max: maxVal,
+        axisLabel: { fontSize: 12, color: theme.subTextColor },
+        axisLine: { lineStyle: { color: theme.borderColor } },
+        splitLine: { lineStyle: { color: theme.gridLineColor } },
+      },
+      yAxis: {
+        type: "value",
+        name: "後半平均ラップ (分)",
+        nameLocation: "middle",
+        nameGap: 40,
+        nameTextStyle: { color: theme.subTextColor, fontSize: 12 },
+        min: minVal,
+        max: maxVal,
+        axisLabel: { fontSize: 12, color: theme.subTextColor },
+        splitLine: { lineStyle: { color: theme.gridLineColor } },
+      },
+      series: [
+        // Diagonal reference line
+        {
+          type: "line",
+          data: [
+            [minVal, minVal],
+            [maxVal, maxVal],
+          ],
+          symbol: "none",
+          lineStyle: { color: "#6b7280", type: "dashed", width: 1 },
+          silent: true,
+          z: 1,
+        },
+        // Scatter series per category
+        ...categoriesToShow.map((cat) => ({
+          name: cat,
+          type: "scatter" as const,
+          data: (scatterData[cat] ?? []).map((p) => ({
+            value: [p.firstHalf, p.secondHalf],
+            name: p.name,
+            no: p.no,
+            category: p.category,
+          })),
+          symbolSize: 8,
+          itemStyle: {
+            color: CATEGORY_CONFIG[cat].color,
+            opacity: 0.7,
+          },
+          emphasis: {
+            itemStyle: { opacity: 1, borderWidth: 2, borderColor: "#fff" },
+          },
+          z: 2,
+        })),
+      ],
+    }),
+    [categoriesToShow, scatterData, minVal, maxVal, theme]
+  );
 
   return (
     <Card>
@@ -102,64 +176,7 @@ export function PaceScatter({ category }: PaceScatterProps) {
         <p className="mb-2 text-xs text-muted-foreground">
           対角線より上 = 後半ペースダウン / 対角線より下 = 後半ペースアップ
         </p>
-        <ResponsiveContainer width="100%" height={350}>
-          <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
-            <XAxis
-              type="number"
-              dataKey="firstHalf"
-              name="前半平均"
-              unit=" 分"
-              domain={[minVal, maxVal]}
-              tick={{ fontSize: 12, fill: "currentColor" }}
-              label={{ value: "前半平均ラップ (分)", position: "insideBottom", offset: -5, fill: "currentColor", fontSize: 12 }}
-              stroke="currentColor"
-            />
-            <YAxis
-              type="number"
-              dataKey="secondHalf"
-              name="後半平均"
-              unit=" 分"
-              domain={[minVal, maxVal]}
-              tick={{ fontSize: 12, fill: "currentColor" }}
-              label={{ value: "後半平均ラップ (分)", angle: -90, position: "insideLeft", fill: "currentColor", fontSize: 12 }}
-              stroke="currentColor"
-            />
-            <ReferenceLine
-              segment={[
-                { x: minVal, y: minVal },
-                { x: maxVal, y: maxVal },
-              ]}
-              stroke="#6b7280"
-              strokeDasharray="4 4"
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(var(--popover, 220 20% 14%))",
-                border: "1px solid hsl(var(--border, 220 20% 25%))",
-                borderRadius: "8px",
-                color: "inherit",
-              }}
-              formatter={(value, name) => [`${value} 分`, String(name) === "firstHalf" ? "前半平均" : "後半平均"]}
-              labelFormatter={(_, payload) => {
-                if (payload && payload.length > 0) {
-                  const p = payload[0]?.payload as PacePoint | undefined;
-                  return p ? `${p.name} (#${p.no}) - ${p.category}` : "";
-                }
-                return "";
-              }}
-            />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            {categoriesToShow.map((cat) => (
-              <Scatter
-                key={cat}
-                name={cat}
-                data={scatterData[cat] ?? []}
-                fill={CATEGORY_CONFIG[cat].color}
-                fillOpacity={0.7}
-              />
-            ))}
-          </ScatterChart>
-        </ResponsiveContainer>
+        <EChart option={option} style={{ width: "100%", height: "350px" }} />
       </CardContent>
     </Card>
   );

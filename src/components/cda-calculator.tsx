@@ -1,18 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { EChart, useChartTheme } from "@/components/echart";
+import type { EChartsOption } from "@/components/echart";
 import type { AthleteResult, RaceMetadata } from "@/lib/types";
 import { timeToSeconds } from "@/lib/time-utils";
 import { calcCdAFromLapTime } from "@/lib/cda";
@@ -22,17 +14,10 @@ interface CdACalculatorProps {
   race: RaceMetadata;
 }
 
-function getCdAColor(cda: number, minCda: number, maxCda: number): string {
-  if (maxCda === minCda) return "hsl(var(--chart-2))";
-  const ratio = (cda - minCda) / (maxCda - minCda);
-  if (ratio < 0.33) return "hsl(var(--chart-2))";
-  if (ratio < 0.66) return "hsl(var(--chart-3))";
-  return "hsl(var(--chart-5))";
-}
-
 export function CdACalculator({ athlete, race }: CdACalculatorProps) {
   const [power, setPower] = useState(200);
   const [weight, setWeight] = useState(75);
+  const theme = useChartTheme();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -93,6 +78,63 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
   const minCda = Math.min(...validCdAs);
   const maxCda = Math.max(...validCdAs);
 
+  const option: EChartsOption = useMemo(
+    () => ({
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        backgroundColor: theme.bgColor,
+        borderColor: theme.borderColor,
+        textStyle: { color: theme.textColor },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        formatter: (params: any) => {
+          const p = Array.isArray(params) ? params[0] : params;
+          return `<div style="font-weight:600">Lap ${p.axisValue}</div>
+                  <div>CdA: ${Number(p.value).toFixed(4)} m\u00b2</div>`;
+        },
+      },
+      visualMap: {
+        show: false,
+        min: minCda,
+        max: maxCda,
+        dimension: 1,
+        inRange: {
+          color: ["#4ade80", "#facc15", "#f87171"],
+        },
+      },
+      grid: { top: 10, right: 10, bottom: 30, left: 55 },
+      xAxis: {
+        type: "category",
+        data: lapCdAs.map((d) => d.lap),
+        axisLabel: { fontSize: 10, color: theme.subTextColor },
+        axisLine: { lineStyle: { color: theme.borderColor } },
+        name: "Lap",
+        nameLocation: "end",
+        nameTextStyle: { color: theme.subTextColor, fontSize: 11 },
+      },
+      yAxis: {
+        type: "value",
+        axisLabel: {
+          fontSize: 10,
+          color: theme.subTextColor,
+          formatter: (v: number) => v.toFixed(3),
+        },
+        splitLine: { lineStyle: { color: theme.gridLineColor } },
+      },
+      series: [
+        {
+          type: "bar",
+          data: lapCdAs.map((d) => [d.lap, d.cda]),
+          itemStyle: {
+            borderRadius: [4, 4, 0, 0],
+          },
+          animationDuration: 600,
+        },
+      ],
+    }),
+    [lapCdAs, minCda, maxCda, theme]
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -133,14 +175,14 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
             <h4 className="mb-3 text-sm font-medium">環境条件</h4>
             <div className="space-y-1 text-sm text-muted-foreground">
               <p>
-                気温: {race.weather.temperature}°C / 湿度:{" "}
+                気温: {race.weather.temperature}&deg;C / 湿度:{" "}
                 {race.weather.humidity}%
               </p>
               <p>風: {race.weather.wind}</p>
               <p>
                 コース: 1周 {categoryInfo?.lapDistance ?? 5.666}km (フラット)
               </p>
-              <p>空気密度: {airDensity} kg/m³</p>
+              <p>空気密度: {airDensity} kg/m&sup3;</p>
               <p>Crr: 0.004 / 駆動効率: 0.97</p>
               <p>
                 総重量: {totalWeight}kg (体重{weight}kg + 機材8kg)
@@ -154,49 +196,10 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
           <p className="text-4xl font-bold tabular-nums text-primary">
             {avgCdA.toFixed(4)}
           </p>
-          <p className="text-xs text-muted-foreground">m²</p>
+          <p className="text-xs text-muted-foreground">m&sup2;</p>
         </div>
 
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={lapCdAs}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="hsl(var(--border))"
-            />
-            <XAxis
-              dataKey="lap"
-              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              label={{
-                value: "Lap",
-                position: "insideBottomRight",
-                offset: -5,
-                fontSize: 11,
-                fill: "hsl(var(--muted-foreground))",
-              }}
-            />
-            <YAxis
-              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => v.toFixed(3)}
-              domain={["dataMin - 0.01", "dataMax + 0.01"]}
-            />
-            <Tooltip
-              formatter={(value) => [Number(value).toFixed(4), "CdA (m\u00b2)"]}
-              contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "8px",
-              }}
-            />
-            <Bar dataKey="cda" radius={[4, 4, 0, 0]}>
-              {lapCdAs.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={getCdAColor(entry.cda, minCda, maxCda)}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <EChart option={option} style={{ width: "100%", height: "200px" }} />
 
         <p className="mt-4 text-xs text-muted-foreground">
           ※ この推定は一定速度を仮定しており、風の影響、加減速、コーナリングなどは考慮していません。実際のCdAとは異なる場合があります。

@@ -1,17 +1,10 @@
 "use client";
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EChart, useChartTheme, COLORS } from "@/components/echart";
+import type { EChartsOption } from "@/components/echart";
 import type { AthleteResult } from "@/lib/types";
 import { timeToSeconds, formatTime, secondsToTime } from "@/lib/time-utils";
 import { mean } from "@/lib/stats";
@@ -41,6 +34,8 @@ function getHalfSplit(
 export function PacingAnalysis({ athlete }: PacingAnalysisProps) {
   if (athlete.lapTimes.length < 2) return null;
 
+  const theme = useChartTheme();
+
   const lapSeconds = athlete.lapTimes.map((l) => timeToSeconds(l.time));
   const { firstEnd, secondStart } = getHalfSplit(
     athlete.category,
@@ -59,13 +54,87 @@ export function PacingAnalysis({ athlete }: PacingAnalysisProps) {
   const bestLapIdx = lapSeconds.indexOf(Math.min(...lapSeconds));
   const worstLapIdx = lapSeconds.indexOf(Math.max(...lapSeconds));
 
-  const barData = [
-    { name: `前半 (Lap 1-${firstEnd})`, value: firstAvg },
-    {
-      name: `後半 (Lap ${secondStart}-${athlete.lapTimes.length})`,
-      value: secondAvg,
-    },
-  ];
+  const option: EChartsOption = useMemo(() => {
+    const names = [
+      `前半 (Lap 1-${firstEnd})`,
+      `後半 (Lap ${secondStart}-${athlete.lapTimes.length})`,
+    ];
+
+    return {
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "shadow" },
+        backgroundColor: theme.bgColor,
+        borderColor: theme.borderColor,
+        textStyle: { color: theme.textColor },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        formatter: (params: any) => {
+          const p = Array.isArray(params) ? params[0] : params;
+          return `<div style="font-weight:600">${p.axisValue}</div>
+                  <div>平均ラップ: ${secondsToTime(Math.round(Number(p.value)))}</div>`;
+        },
+      },
+      grid: { top: 10, right: 30, bottom: 10, left: 140 },
+      xAxis: {
+        type: "value",
+        axisLabel: {
+          fontSize: 11,
+          color: theme.subTextColor,
+          formatter: (v: number) => secondsToTime(v),
+        },
+        splitLine: { lineStyle: { color: theme.gridLineColor } },
+      },
+      yAxis: {
+        type: "category",
+        data: names,
+        axisLabel: { fontSize: 11, color: theme.subTextColor },
+        axisLine: { lineStyle: { color: theme.borderColor } },
+      },
+      series: [
+        {
+          type: "bar",
+          data: [
+            {
+              value: firstAvg,
+              itemStyle: {
+                color: {
+                  type: "linear",
+                  x: 0,
+                  y: 0,
+                  x2: 1,
+                  y2: 0,
+                  colorStops: [
+                    { offset: 0, color: COLORS.cyan + "88" },
+                    { offset: 1, color: COLORS.cyan },
+                  ],
+                },
+                borderRadius: [0, 4, 4, 0],
+              },
+            },
+            {
+              value: secondAvg,
+              itemStyle: {
+                color: {
+                  type: "linear",
+                  x: 0,
+                  y: 0,
+                  x2: 1,
+                  y2: 0,
+                  colorStops: [
+                    { offset: 0, color: (isNegativeSplit ? COLORS.green : COLORS.red) + "88" },
+                    { offset: 1, color: isNegativeSplit ? COLORS.green : COLORS.red },
+                  ],
+                },
+                borderRadius: [0, 4, 4, 0],
+              },
+            },
+          ],
+          barWidth: "50%",
+          animationDuration: 600,
+        },
+      ],
+    };
+  }, [firstAvg, secondAvg, firstEnd, secondStart, athlete.lapTimes.length, isNegativeSplit, theme]);
 
   return (
     <Card>
@@ -84,46 +153,7 @@ export function PacingAnalysis({ athlete }: PacingAnalysisProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={barData} layout="vertical">
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="hsl(var(--border))"
-            />
-            <XAxis
-              type="number"
-              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => secondsToTime(v)}
-            />
-            <YAxis
-              type="category"
-              dataKey="name"
-              width={130}
-              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-            />
-            <Tooltip
-              formatter={(value) => [
-                secondsToTime(Math.round(Number(value))),
-                "平均ラップ",
-              ]}
-              contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "8px",
-              }}
-            />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-              <Cell fill="hsl(var(--chart-1))" />
-              <Cell
-                fill={
-                  isNegativeSplit
-                    ? "hsl(var(--chart-2))"
-                    : "hsl(var(--chart-5))"
-                }
-              />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <EChart option={option} style={{ width: "100%", height: "180px" }} />
 
         <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
           <div>

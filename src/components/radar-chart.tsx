@@ -1,15 +1,9 @@
 "use client";
 
-import {
-  RadarChart as RechartsRadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EChart, useChartTheme, COLORS } from "@/components/echart";
+import type { EChartsOption } from "@/components/echart";
 import type { AthleteResult, RaceMetadata } from "@/lib/types";
 import { timeToSeconds } from "@/lib/time-utils";
 import { mean, stddev, calcCV } from "@/lib/stats";
@@ -43,6 +37,8 @@ export function RadarChartComponent({
   categoryAthletes,
   race,
 }: RadarChartProps) {
+  const theme = useChartTheme();
+
   const finished = categoryAthletes.filter(
     (a) => a.status === "finished" || a.status === "OPEN"
   );
@@ -51,7 +47,6 @@ export function RadarChartComponent({
   const categoryInfo = race.categories.find(
     (c) => c.name === athlete.category
   );
-  const lapDist = categoryInfo?.lapDistance ?? 5.666;
 
   const totalTimes = finished
     .map((a) => (a.totalTime ? timeToSeconds(a.totalTime) : 0))
@@ -101,9 +96,7 @@ export function RadarChartComponent({
   const data = [
     {
       axis: "総合タイム",
-      value: clampHensachi(
-        calcHensachi(athleteTotalTime, totalTimes, true)
-      ),
+      value: clampHensachi(calcHensachi(athleteTotalTime, totalTimes, true)),
     },
     {
       axis: "ラップ安定性",
@@ -117,17 +110,79 @@ export function RadarChartComponent({
     },
     {
       axis: "ベストラップ",
-      value: clampHensachi(
-        calcHensachi(athleteBestLap, bestLaps, true)
-      ),
+      value: clampHensachi(calcHensachi(athleteBestLap, bestLaps, true)),
     },
     {
       axis: "平均速度",
-      value: clampHensachi(
-        calcHensachi(athleteAvgSpeed, avgSpeeds, false)
-      ),
+      value: clampHensachi(calcHensachi(athleteAvgSpeed, avgSpeeds, false)),
     },
   ];
+
+  const option: EChartsOption = useMemo(
+    () => ({
+      tooltip: {
+        trigger: "item",
+        backgroundColor: theme.bgColor,
+        borderColor: theme.borderColor,
+        textStyle: { color: theme.textColor },
+      },
+      radar: {
+        indicator: data.map((d) => ({
+          name: d.axis,
+          max: 80,
+          min: 20,
+        })),
+        shape: "polygon",
+        splitNumber: 4,
+        axisName: {
+          color: theme.subTextColor,
+          fontSize: 11,
+        },
+        splitLine: {
+          lineStyle: { color: theme.gridLineColor },
+        },
+        splitArea: {
+          areaStyle: {
+            color: theme.isDark
+              ? ["rgba(34,211,238,0.02)", "rgba(34,211,238,0.05)", "rgba(34,211,238,0.02)", "rgba(34,211,238,0.05)"]
+              : ["rgba(0,0,0,0.01)", "rgba(0,0,0,0.03)", "rgba(0,0,0,0.01)", "rgba(0,0,0,0.03)"],
+          },
+        },
+        axisLine: {
+          lineStyle: { color: theme.gridLineColor },
+        },
+      },
+      series: [
+        {
+          type: "radar",
+          data: [
+            {
+              value: data.map((d) => parseFloat(d.value.toFixed(1))),
+              name: "偏差値",
+              areaStyle: {
+                color: {
+                  type: "radial",
+                  x: 0.5,
+                  y: 0.5,
+                  r: 0.5,
+                  colorStops: [
+                    { offset: 0, color: COLORS.cyan + "40" },
+                    { offset: 1, color: COLORS.cyan + "10" },
+                  ],
+                },
+              },
+              lineStyle: { color: COLORS.cyan, width: 2 },
+              itemStyle: { color: COLORS.cyan },
+              symbol: "circle",
+              symbolSize: 6,
+            },
+          ],
+          animationDuration: 800,
+        },
+      ],
+    }),
+    [data, theme]
+  );
 
   return (
     <Card>
@@ -135,37 +190,7 @@ export function RadarChartComponent({
         <CardTitle>レーダーチャート (偏差値)</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={320}>
-          <RechartsRadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
-            <PolarGrid stroke="hsl(var(--border))" />
-            <PolarAngleAxis
-              dataKey="axis"
-              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-            />
-            <PolarRadiusAxis
-              angle={90}
-              domain={[20, 80]}
-              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              tickCount={4}
-            />
-            <Radar
-              name="偏差値"
-              dataKey="value"
-              stroke="hsl(var(--chart-1))"
-              fill="hsl(var(--chart-1))"
-              fillOpacity={0.25}
-              strokeWidth={2}
-            />
-            <Tooltip
-              formatter={(value) => [Number(value).toFixed(1), "偏差値"]}
-              contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "8px",
-              }}
-            />
-          </RechartsRadarChart>
-        </ResponsiveContainer>
+        <EChart option={option} style={{ width: "100%", height: "320px" }} />
         <div className="mt-2 grid grid-cols-5 gap-1 text-center text-xs text-muted-foreground">
           {data.map((d) => (
             <div key={d.axis}>
