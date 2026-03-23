@@ -73,63 +73,38 @@ export function RankProgression({ category }: RankProgressionProps) {
       .map((r, idx) => ({ idx, finalRank: ranks[idx][meta.laps - 1], name: r.name }))
       .sort((a, b) => a.finalRank - b.finalRank);
 
-    // Show only every 10th rider + TOP3 for readability
+    // Show TOP10 only
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const series: any[] = [];
+    const top10Colors = [
+      "#fbbf24", "#94a3b8", "#f97316", "#22d3ee", "#4ade80",
+      "#a78bfa", "#f472b6", "#38bdf8", "#fb923c", "#6ee7b7",
+    ];
 
-    finalRankOrder.forEach(({ idx, finalRank, name }) => {
-      const isTop3 = finalRank <= 3;
-      const isEvery10 = finalRank % 10 === 0;
-      const isLast = finalRank === totalRiders;
+    finalRankOrder
+      .filter(({ finalRank }) => finalRank <= 10)
+      .forEach(({ idx, finalRank, name }) => {
+        const color = top10Colors[finalRank - 1];
+        const isTop3 = finalRank <= 3;
 
-      if (!isTop3 && !isEvery10 && !isLast) return;
-
-      let lineColor = meta.color;
-      let lineWidth = 1.5;
-      let opacity = 0.4;
-      let showSymbol = false;
-
-      if (isTop3) {
-        const colors = ["#fbbf24", "#94a3b8", "#f97316"];
-        lineColor = colors[finalRank - 1];
-        lineWidth = 3;
-        opacity = 1;
-        showSymbol = true;
-      } else if (isLast) {
-        lineColor = "#ef4444";
-        lineWidth = 2;
-        opacity = 0.7;
-      }
-
-      const label = isTop3
-        ? `${finalRank}位 ${name}`
-        : isLast
-          ? `${finalRank}位 (最下位)`
-          : `${finalRank}位`;
-
-      series.push({
-        name: label,
-        type: "line" as const,
-        data: ranks[idx],
-        smooth: 0.3,
-        symbol: showSymbol ? "circle" : "none",
-        symbolSize: showSymbol ? 4 : 0,
-        lineStyle: {
-          width: lineWidth,
-          color: lineColor,
-          opacity,
-        },
-        emphasis: {
-          lineStyle: { width: 3, opacity: 1 },
-          label: {
-            show: true,
-            formatter: () => `${finalRank}位 ${name}`,
-            fontSize: 11,
+        series.push({
+          name: `${finalRank}位 ${name}`,
+          type: "line" as const,
+          data: ranks[idx],
+          smooth: 0.3,
+          symbol: "circle",
+          symbolSize: isTop3 ? 5 : 3,
+          lineStyle: {
+            width: isTop3 ? 3 : 2,
+            color,
+            opacity: isTop3 ? 1 : 0.7,
           },
-        },
-        z: isTop3 ? 100 - finalRank : 50 - finalRank,
+          emphasis: {
+            lineStyle: { width: 4, opacity: 1 },
+          },
+          z: 10 - finalRank,
+        });
       });
-    });
 
     return {
       tooltip: {
@@ -173,7 +148,7 @@ export function RankProgression({ category }: RankProgressionProps) {
         name: "順位",
         inverse: true,
         min: 1,
-        max: totalRiders,
+        max: Math.min(20, totalRiders),
         axisLabel: { fontSize: 10 },
       },
       dataZoom:
@@ -196,7 +171,7 @@ export function RankProgression({ category }: RankProgressionProps) {
       </CardHeader>
       <CardContent>
         <p className="mb-2 text-xs text-muted-foreground">
-          各ラップ時点での累積タイムによる順位推移。TOP3と10位毎の選手をハイライト。ホバーで詳細表示。
+          各ラップ時点での累積タイムによる順位推移。TOP10を表示。
         </p>
         <EChart option={option} style={{ width: "100%", height: "500px" }} />
       </CardContent>
