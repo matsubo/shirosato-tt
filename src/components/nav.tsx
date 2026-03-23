@@ -9,7 +9,7 @@ export function Nav() {
           <span className="text-lg font-bold tracking-tight">
             しろさとTT200
           </span>
-          <span className="text-sm text-muted-foreground">Race Analytics</span>
+          <span className="text-sm text-muted-foreground">TT Analytics</span>
         </Link>
         <ThemeToggle />
       </nav>

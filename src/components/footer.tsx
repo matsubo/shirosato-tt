@@ -24,7 +24,7 @@ export function Footer() {
             shirosato-tt.com
           </a>
         </p>
-        <p>&copy; 2026 しろさとTT200 Race Analytics</p>
+        <p>&copy; 2026 しろさとTT200 TT Analytics</p>
       </div>
     </footer>
   );

@@ -67,7 +67,7 @@ export function generateMetadata({
             url: `${siteUrl}/og-image.png`,
             width: 1200,
             height: 630,
-            alt: "第11回 しろさとTT200 Race Analytics Dashboard",
+            alt: "第11回 しろさとTT200 TT Analytics Dashboard",
           },
         ],
       },

@@ -17,9 +17,9 @@ export function StructuredData() {
       },
     },
     numberOfParticipants: results.length,
-    sport: "Cycling",
+    sport: "Cycling Time Trial",
     description:
-      "しろさとTT200のレースデータを可視化するBIダッシュボード。ラップタイム分析、チーム比較、走行パフォーマンスを提供します。",
+      "第11回しろさとTT200（自転車タイムトライアル）の全選手リザルト・ラップタイムをBIダッシュボードで徹底分析。",
   };
 
   return (
