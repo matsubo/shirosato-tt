@@ -58,7 +58,7 @@ function GenderRatioChart({ category }: { category: CategoryFilter }) {
           type: "pie",
           radius: ["35%", "65%"],
           center: ["50%", "50%"],
-          roseType: "area",
+          // Standard donut (no roseType distortion)
           data: [
             {
               name: "男性",
@@ -371,9 +371,12 @@ function DeviationDistributionChart({ category }: { category: CategoryFilter }) 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>偏差値分布</CardTitle>
+        <CardTitle>タイム偏差値分布（カテゴリ内）</CardTitle>
       </CardHeader>
       <CardContent>
+        <p className="mb-2 text-xs text-muted-foreground">
+          完走タイムをカテゴリ内で偏差値化。50が平均、高いほど速い。破線は正規分布。
+        </p>
         <EChart option={option} style={{ width: "100%", height: "250px" }} />
       </CardContent>
     </Card>

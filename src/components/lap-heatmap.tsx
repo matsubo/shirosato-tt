@@ -1,13 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { EChart, useChartTheme } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import results from "@/data/results.json";
 import type { AthleteResult } from "@/lib/types";
 import { timeToSeconds, secondsToTime } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
+
+const PAGE_SIZE = 30;
 
 interface LapHeatmapProps {
   category: CategoryFilter;
@@ -15,36 +19,52 @@ interface LapHeatmapProps {
 
 export function LapHeatmap({ category }: LapHeatmapProps) {
   const theme = useChartTheme();
+  const [page, setPage] = useState(0);
 
-  const option: EChartsOption | null = useMemo(() => {
-    if (category === "ALL") return null;
-
+  const allFinished = useMemo(() => {
+    if (category === "ALL") return [];
     const allData = results as unknown as AthleteResult[];
-    const finished = allData
+    return allData
       .filter(
         (r) =>
           r.category === category &&
-          r.status === "finished" &&
-          r.lapTimes.length > 0 &&
-          typeof r.rank === "number"
+          (r.status === "finished" || r.status === "OPEN") &&
+          r.lapTimes.length > 0
       )
-      .sort((a, b) => (a.rank as number) - (b.rank as number))
-      .slice(0, 30); // Top 30 for readability
+      .sort((a, b) => {
+        const ra = typeof a.rank === "number" ? a.rank : 9999;
+        const rb = typeof b.rank === "number" ? b.rank : 9999;
+        return ra - rb;
+      });
+  }, [category]);
 
-    if (finished.length === 0) return null;
+  const totalPages = Math.ceil(allFinished.length / PAGE_SIZE);
+  const currentPage = Math.min(page, totalPages - 1);
 
-    const maxLaps = Math.max(...finished.map((r) => r.lapTimes.length));
+  const option: EChartsOption | null = useMemo(() => {
+    if (category === "ALL" || allFinished.length === 0) return null;
+
+    const paged = allFinished.slice(
+      currentPage * PAGE_SIZE,
+      (currentPage + 1) * PAGE_SIZE
+    );
+
+    const maxLaps = Math.max(...paged.map((r) => r.lapTimes.length));
     const lapLabels = Array.from({ length: maxLaps }, (_, i) => `${i + 1}`);
-    const riderLabels = finished.map((r) => `#${r.no} ${r.name}`);
+    const riderLabels = paged.map(
+      (r) =>
+        `${typeof r.rank === "number" ? r.rank : r.status}位 ${r.name}`
+    );
 
-    // Build heatmap data: [lapIdx, riderIdx, seconds]
     const heatmapData: Array<[number, number, number | null]> = [];
     let minSec = Infinity;
     let maxSec = -Infinity;
 
-    for (let ri = 0; ri < finished.length; ri++) {
+    for (let ri = 0; ri < paged.length; ri++) {
       for (let li = 0; li < maxLaps; li++) {
-        const lt = finished[ri].lapTimes.find((l) => l.lap === li + 1);
+        const lt = paged[ri].lapTimes.find(
+          (l: { lap: number }) => l.lap === li + 1
+        );
         if (lt) {
           const sec = timeToSeconds(lt.time);
           heatmapData.push([li, ri, sec]);
@@ -74,7 +94,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
         top: 10,
         right: 20,
         bottom: 50,
-        left: 120,
+        left: 140,
       },
       xAxis: {
         type: "category",
@@ -126,19 +146,51 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
         },
       ],
     };
-  }, [category, theme]);
+  }, [category, allFinished, currentPage, theme]);
 
   if (category === "ALL" || option === null) return null;
+
+  const startRank = currentPage * PAGE_SIZE + 1;
+  const endRank = Math.min((currentPage + 1) * PAGE_SIZE, allFinished.length);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>ラップタイム ヒートマップ (TOP30)</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>
+            ラップタイム ヒートマップ ({startRank}-{endRank}位 / {allFinished.length}人)
+          </CardTitle>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-7 w-7"
+                disabled={currentPage === 0}
+                onClick={() => setPage(currentPage - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground px-2">
+                {currentPage + 1} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-7 w-7"
+                disabled={currentPage >= totalPages - 1}
+                onClick={() => setPage(currentPage + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <EChart
           option={option}
-          style={{ width: "100%", height: "500px" }}
+          style={{ width: "100%", height: `${Math.max(300, endRank - startRank + 1) * 16 + 80}px` }}
         />
       </CardContent>
     </Card>

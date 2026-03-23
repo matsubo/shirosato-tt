@@ -47,10 +47,20 @@ export function generateMetadata({
           ? " (DNS)"
           : "";
     const title = `${athlete.name} No.${athlete.no}${timeStr}${statusStr} | しろさとTT200`;
+    const rankStr = typeof athlete.rank === "number" ? `総合${athlete.rank}位` : athlete.status;
+    const desc = athlete.totalTime
+      ? `${athlete.name}（${athlete.age}歳・${athlete.prefecture}）の${athlete.category}レース分析。${rankStr}、タイム${athlete.totalTime}、平均速度${athlete.avgSpeed}km/h。ラップ推移・偏差値・ペーシング・CdA推定を詳細に可視化。`
+      : `${athlete.name}（${athlete.age}歳・${athlete.prefecture}）の${athlete.category}レース情報。`;
+
     return {
       title,
+      description: desc,
+      alternates: {
+        canonical: `${siteUrl}/athletes/${athlete.no}`,
+      },
       openGraph: {
         title,
+        description: desc,
         images: [
           {
             url: `${siteUrl}/og-image.png`,
@@ -63,6 +73,7 @@ export function generateMetadata({
       twitter: {
         card: "summary_large_image",
         title,
+        description: desc,
         images: [`${siteUrl}/og-image.png`],
       },
     };

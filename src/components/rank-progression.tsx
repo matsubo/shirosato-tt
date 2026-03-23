@@ -70,40 +70,52 @@ export function RankProgression({ category }: RankProgressionProps) {
       });
     }
 
-    // Sort athletes by final rank for consistent visual layering
+    // Sort athletes by final rank
     const finalRankOrder = finished
-      .map((r, idx) => ({ idx, finalRank: ranks[idx][meta.laps - 1] }))
+      .map((r, idx) => ({ idx, finalRank: ranks[idx][meta.laps - 1], name: r.name }))
       .sort((a, b) => a.finalRank - b.finalRank);
 
-    // Create series: slower riders first (drawn behind), top riders last (on top)
+    // Show only every 10th rider + TOP3 for readability
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const series: any[] = finalRankOrder.reverse().map(({ idx, finalRank }) => {
-      const r = finished[idx];
-      const isTop3 = finalRank <= 3;
-      const isTop10 = finalRank <= 10;
+    const series: any[] = [];
 
-      // Color & style based on final rank
+    finalRankOrder.forEach(({ idx, finalRank, name }) => {
+      const isTop3 = finalRank <= 3;
+      const isEvery10 = finalRank % 10 === 0;
+      const isLast = finalRank === totalRiders;
+
+      if (!isTop3 && !isEvery10 && !isLast) return;
+
       let lineColor = meta.color;
-      let lineWidth = 1;
-      let opacity = 0.08;
+      let lineWidth = 1.5;
+      let opacity = 0.4;
+      let showSymbol = false;
 
       if (isTop3) {
         const colors = ["#fbbf24", "#94a3b8", "#f97316"];
         lineColor = colors[finalRank - 1];
         lineWidth = 3;
         opacity = 1;
-      } else if (isTop10) {
-        lineWidth = 1.5;
-        opacity = 0.5;
+        showSymbol = true;
+      } else if (isLast) {
+        lineColor = "#ef4444";
+        lineWidth = 2;
+        opacity = 0.7;
       }
 
-      return {
-        name: isTop3 ? `${finalRank}位 ${r.name}` : r.name,
+      const label = isTop3
+        ? `${finalRank}位 ${name}`
+        : isLast
+          ? `${finalRank}位 (最下位)`
+          : `${finalRank}位`;
+
+      series.push({
+        name: label,
         type: "line" as const,
         data: ranks[idx],
         smooth: 0.3,
-        symbol: isTop3 ? "circle" : "none",
-        symbolSize: isTop3 ? 4 : 0,
+        symbol: showSymbol ? "circle" : "none",
+        symbolSize: showSymbol ? 4 : 0,
         lineStyle: {
           width: lineWidth,
           color: lineColor,
@@ -113,12 +125,12 @@ export function RankProgression({ category }: RankProgressionProps) {
           lineStyle: { width: 3, opacity: 1 },
           label: {
             show: true,
-            formatter: (params: { seriesName: string }) => params.seriesName,
+            formatter: () => `${finalRank}位 ${name}`,
             fontSize: 11,
           },
         },
         z: isTop3 ? 100 - finalRank : 50 - finalRank,
-      };
+      });
     });
 
     return {
@@ -142,10 +154,7 @@ export function RankProgression({ category }: RankProgressionProps) {
       },
       legend: {
         show: true,
-        data: finalRankOrder
-          .filter(({ finalRank }) => finalRank <= 3)
-          .reverse()
-          .map(({ idx, finalRank }) => `${finalRank}位 ${finished[idx].name}`),
+        data: series.map((s) => s.name),
         bottom: 0,
         textStyle: { fontSize: 11 },
       },
