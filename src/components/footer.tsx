@@ -24,15 +24,22 @@ export function Footer() {
             shirosato-tt.com
           </a>
         </p>
-        <p>
+        <p className="inline-flex items-center gap-1">
+          This work is licensed under{" "}
           <a
-            href="https://github.com/matsubo/shirosato-tt"
+            href="https://creativecommons.org/licenses/by-sa/4.0/"
             target="_blank"
             rel="noopener noreferrer"
             className="underline decoration-muted-foreground/40 hover:decoration-foreground hover:text-foreground transition-colors"
           >
-            GitHub
+            CC BY-SA 4.0
           </a>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" className="inline-block ml-0.5" style={{ maxWidth: "1em", maxHeight: "1em" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" className="inline-block ml-0.5" style={{ maxWidth: "1em", maxHeight: "1em" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" className="inline-block ml-0.5" style={{ maxWidth: "1em", maxHeight: "1em" }} />
         </p>
         <p>&copy; 2026 しろさとTT200 TT Analytics</p>
       </div>
