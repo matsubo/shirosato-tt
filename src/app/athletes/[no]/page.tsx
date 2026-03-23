@@ -27,6 +27,8 @@ export function generateStaticParams() {
   }));
 }
 
+const siteUrl = "https://shirosato-tt-2026.teraren.com";
+
 export function generateMetadata({
   params,
 }: {
@@ -44,8 +46,25 @@ export function generateMetadata({
         : athlete.status === "DNS"
           ? " (DNS)"
           : "";
+    const title = `${athlete.name} No.${athlete.no}${timeStr}${statusStr} | しろさとTT200`;
     return {
-      title: `${athlete.name} No.${athlete.no}${timeStr}${statusStr} | しろさとTT200`,
+      title,
+      openGraph: {
+        title,
+        images: [
+          {
+            url: `${siteUrl}/og-image.png`,
+            width: 1200,
+            height: 630,
+            alt: "第11回 しろさとTT200 Race Analytics Dashboard",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        images: [`${siteUrl}/og-image.png`],
+      },
     };
   });
 }

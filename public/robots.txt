@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shirosato-tt-2026.teraren.com/sitemap.xml
