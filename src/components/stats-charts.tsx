@@ -390,7 +390,6 @@ export function StatsCharts({ category }: StatsChartsProps) {
     <div className="grid gap-4 sm:grid-cols-2">
       <GenderRatioChart category={category} />
       <AgeDistributionChart category={category} />
-      <DeviationDistributionChart category={category} />
       <PrefectureDistributionChart category={category} />
     </div>
   );
