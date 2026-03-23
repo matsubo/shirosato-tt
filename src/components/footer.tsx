@@ -24,6 +24,16 @@ export function Footer() {
             shirosato-tt.com
           </a>
         </p>
+        <p>
+          <a
+            href="https://github.com/sponsors/matsubo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 underline decoration-muted-foreground/40 hover:decoration-foreground hover:text-foreground transition-colors"
+          >
+            <span className="text-pink-400">&#9829;</span> Sponsor
+          </a>
+        </p>
         <p className="inline-flex items-center gap-1">
           This work is licensed under{" "}
           <a
