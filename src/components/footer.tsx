@@ -41,7 +41,6 @@ export function Footer() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" className="inline-block ml-0.5" style={{ maxWidth: "1em", maxHeight: "1em" }} />
         </p>
-        <p>&copy; 2026 しろさとTT200 TT Analytics</p>
       </div>
     </footer>
   );
