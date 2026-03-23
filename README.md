@@ -67,6 +67,10 @@ docker run -p 80:80 shirosato-tt
 
 - [しろさとTT200 公式サイト](https://shirosato-tt.com/)
 
+## Contributing
+
+バグ報告・機能改善の提案は [GitHub Issues](https://github.com/matsubo/shirosato-tt/issues) にお願いします。
+
 ## Author
 
 **[@ittriathlon](https://x.com/ittriathlon)** | [Blog](https://triathlon.teraren.com/) | [AI TRI+](https://ai-triathlon-result.teraren.com/)

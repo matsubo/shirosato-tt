@@ -24,6 +24,16 @@ export function Footer() {
             shirosato-tt.com
           </a>
         </p>
+        <p>
+          <a
+            href="https://github.com/matsubo/shirosato-tt"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-muted-foreground/40 hover:decoration-foreground hover:text-foreground transition-colors"
+          >
+            GitHub
+          </a>
+        </p>
         <p>&copy; 2026 しろさとTT200 TT Analytics</p>
       </div>
     </footer>
