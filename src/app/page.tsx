@@ -13,6 +13,7 @@ import { SpeedGauge } from "@/components/speed-gauge";
 import { TimeBoxplot } from "@/components/time-boxplot";
 import { LapHeatmap } from "@/components/lap-heatmap";
 import { AllLapsChart } from "@/components/all-laps-chart";
+import { RankProgression } from "@/components/rank-progression";
 import type { CategoryFilter } from "@/components/category-filter";
 import race from "@/data/race.json";
 import type { RaceMetadata } from "@/lib/types";
@@ -71,6 +72,12 @@ export default function Home() {
       <section className="space-y-3">
         <SectionHeader>全選手ラップタイム推移</SectionHeader>
         <AllLapsChart category={category} />
+      </section>
+
+      {/* Rank Progression */}
+      <section className="space-y-3">
+        <SectionHeader>順位推移</SectionHeader>
+        <RankProgression category={category} />
       </section>
 
       {/* Lap Heatmap (only visible when a category is selected) */}
