@@ -97,7 +97,6 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
         show: false,
         min: minCda,
         max: maxCda,
-        dimension: 1,
         inRange: {
           color: ["#4ade80", "#facc15", "#f87171"],
         },
@@ -105,7 +104,7 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
       grid: { top: 10, right: 10, bottom: 30, left: 55 },
       xAxis: {
         type: "category",
-        data: lapCdAs.map((d) => d.lap),
+        data: lapCdAs.map((d) => String(d.lap)),
         axisLabel: { fontSize: 10, color: theme.subTextColor },
         axisLine: { lineStyle: { color: theme.borderColor } },
         name: "Lap",
@@ -124,7 +123,7 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
       series: [
         {
           type: "bar",
-          data: lapCdAs.map((d) => [d.lap, d.cda]),
+          data: lapCdAs.map((d) => d.cda),
           itemStyle: {
             borderRadius: [4, 4, 0, 0],
           },
