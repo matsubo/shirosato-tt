@@ -30,7 +30,6 @@ function extractDecade(ageCategory: string): string {
 }
 
 function filterByCategory(data: AthleteResult[], category: CategoryFilter): AthleteResult[] {
-  if (category === "ALL") return data;
   return data.filter((r) => r.category === category);
 }
 
@@ -274,8 +273,7 @@ function DeviationDistributionChart({ category }: { category: CategoryFilter }) 
   const theme = useChartTheme();
 
   const option: EChartsOption = useMemo(() => {
-    const categoriesToProcess: Array<"200km" | "100km" | "50km"> =
-      category === "ALL" ? ["200km", "100km", "50km"] : [category];
+    const categoriesToProcess: Array<"200km" | "100km" | "50km"> = [category];
 
     const allDeviations: Array<{ deviation: number; category: string }> = [];
 

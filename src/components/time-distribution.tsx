@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EChart, useChartTheme, CATEGORY_COLORS } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
@@ -143,49 +142,13 @@ interface TimeDistributionProps {
 }
 
 export function TimeDistribution({ category }: TimeDistributionProps) {
-  const [active, setActive] = useState<string | number>("200km");
-
-  if (category !== "ALL") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>タイム分布</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CategoryChart category={category} />
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>タイム分布</CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={active} onValueChange={setActive} defaultValue="200km">
-          <TabsList>
-            <TabsTrigger value="200km" style={{ color: active === "200km" ? "#22d3ee" : undefined }}>
-              200km
-            </TabsTrigger>
-            <TabsTrigger value="100km" style={{ color: active === "100km" ? "#4ade80" : undefined }}>
-              100km
-            </TabsTrigger>
-            <TabsTrigger value="50km" style={{ color: active === "50km" ? "#fb923c" : undefined }}>
-              50km
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="200km">
-            <CategoryChart category="200km" />
-          </TabsContent>
-          <TabsContent value="100km">
-            <CategoryChart category="100km" />
-          </TabsContent>
-          <TabsContent value="50km">
-            <CategoryChart category="50km" />
-          </TabsContent>
-        </Tabs>
+        <CategoryChart category={category} />
       </CardContent>
     </Card>
   );

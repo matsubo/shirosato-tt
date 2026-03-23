@@ -44,8 +44,7 @@ export function PaceScatter({ category }: PaceScatterProps) {
   const data = results as unknown as AthleteResult[];
   const theme = useChartTheme();
 
-  const categoriesToShow: Array<"200km" | "100km" | "50km"> =
-    category === "ALL" ? ["200km", "100km", "50km"] : [category];
+  const categoriesToShow: Array<"200km" | "100km" | "50km"> = [category];
 
   const { scatterData, minVal, maxVal } = useMemo(() => {
     const byCategory: Record<string, PacePoint[]> = {};

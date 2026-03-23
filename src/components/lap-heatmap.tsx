@@ -22,7 +22,6 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
   const [page, setPage] = useState(0);
 
   const allFinished = useMemo(() => {
-    if (category === "ALL") return [];
     const allData = results as unknown as AthleteResult[];
     return allData
       .filter(
@@ -42,7 +41,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
   const currentPage = Math.min(page, totalPages - 1);
 
   const option: EChartsOption | null = useMemo(() => {
-    if (category === "ALL" || allFinished.length === 0) return null;
+    if (allFinished.length === 0) return null;
 
     const paged = allFinished.slice(
       currentPage * PAGE_SIZE,
@@ -148,7 +147,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
     };
   }, [category, allFinished, currentPage, theme]);
 
-  if (category === "ALL" || option === null) return null;
+  if (option === null) return null;
 
   const startRank = currentPage * PAGE_SIZE + 1;
   const endRank = Math.min((currentPage + 1) * PAGE_SIZE, allFinished.length);

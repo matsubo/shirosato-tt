@@ -22,8 +22,6 @@ export function RankProgression({ category }: RankProgressionProps) {
   const allData = results as unknown as AthleteResult[];
 
   const option = useMemo(() => {
-    if (category === "ALL") return null;
-
     const meta = CATEGORY_META[category];
     if (!meta) return null;
 
@@ -189,35 +187,12 @@ export function RankProgression({ category }: RankProgressionProps) {
     };
   }, [allData, category]);
 
-  if (category === "ALL") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>順位推移</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            カテゴリを選択すると、各ラップ時点での順位推移が表示されます。
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   if (!option) return null;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          順位推移
-          <span
-            className="ml-2 text-sm font-normal"
-            style={{ color: CATEGORY_META[category]?.color }}
-          >
-            {category}
-          </span>
-        </CardTitle>
+        <CardTitle>順位推移</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="mb-2 text-xs text-muted-foreground">

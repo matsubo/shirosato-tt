@@ -47,19 +47,14 @@ interface KpiCardsProps {
 
 export function KpiCards({ category }: KpiCardsProps) {
   const allData = results as unknown as AthleteResult[];
-  const data = category === "ALL"
-    ? allData
-    : allData.filter((r) => r.category === category);
+  const data = allData.filter((r) => r.category === category);
 
   const total = data.length;
   const finishers = data.filter((r) => r.status === "finished").length;
   const finishRate = total > 0 ? ((finishers / total) * 100).toFixed(1) : "0.0";
   const dnfCount = data.filter((r) => r.status === "DNF").length;
 
-  const categoriesToShow: Array<"200km" | "100km" | "50km"> =
-    category === "ALL"
-      ? ["200km", "100km", "50km"]
-      : [category];
+  const categoriesToShow: Array<"200km" | "100km" | "50km"> = [category];
 
   const fastestByCategory = categoriesToShow.map((cat) => {
     const finished = allData.filter(
@@ -78,9 +73,7 @@ export function KpiCards({ category }: KpiCardsProps) {
     };
   });
 
-  const gridCols = category === "ALL"
-    ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-7"
-    : "grid-cols-2 sm:grid-cols-4 lg:grid-cols-5";
+  const gridCols = "grid-cols-2 sm:grid-cols-4 lg:grid-cols-5";
 
   return (
     <div className={`grid gap-3 ${gridCols}`}>

@@ -22,8 +22,6 @@ export function AllLapsChart({ category }: AllLapsChartProps) {
   const allData = results as unknown as AthleteResult[];
 
   const option = useMemo(() => {
-    if (category === "ALL") return null;
-
     const meta = CATEGORY_META[category];
     if (!meta) return null;
 
@@ -160,35 +158,12 @@ export function AllLapsChart({ category }: AllLapsChartProps) {
     };
   }, [allData, category]);
 
-  if (category === "ALL") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>全選手ラップタイム推移</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            カテゴリを選択すると、全選手のラップタイム推移が表示されます。
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   if (!option) return null;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          全選手ラップタイム推移
-          <span
-            className="ml-2 text-sm font-normal"
-            style={{ color: CATEGORY_META[category]?.color }}
-          >
-            {category}
-          </span>
-        </CardTitle>
+        <CardTitle>全選手ラップタイム推移</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="mb-2 text-xs text-muted-foreground">

@@ -19,13 +19,6 @@ import type { AthleteResult } from "@/lib/types";
 import { formatTime } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
 
-const CATEGORY_COLORS: Record<string, string> = {
-  "200km": "#22d3ee",
-  "100km": "#4ade80",
-  "50km": "#fb923c",
-};
-
-const CATEGORIES = ["全て", "200km", "100km", "50km"] as const;
 const PAGE_SIZE = 20;
 
 interface AthleteSearchProps {
@@ -35,17 +28,10 @@ interface AthleteSearchProps {
 export function AthleteSearch({ category }: AthleteSearchProps) {
   const allData = results as unknown as AthleteResult[];
   const [query, setQuery] = useState("");
-  const [localCategoryFilter, setLocalCategoryFilter] = useState<string>("全て");
   const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => {
-    let list = [...allData];
-
-    if (category !== "ALL") {
-      list = list.filter((r) => r.category === category);
-    } else if (localCategoryFilter !== "全て") {
-      list = list.filter((r) => r.category === localCategoryFilter);
-    }
+    let list = allData.filter((r) => r.category === category);
 
     if (query.trim()) {
       const q = query.trim().toLowerCase();
@@ -56,17 +42,13 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
     }
 
     list.sort((a, b) => {
-      if (a.category !== b.category) {
-        const order = { "200km": 0, "100km": 1, "50km": 2 };
-        return (order[a.category] ?? 0) - (order[b.category] ?? 0);
-      }
       const ra = typeof a.rank === "number" ? a.rank : 9999;
       const rb = typeof b.rank === "number" ? b.rank : 9999;
       return ra - rb;
     });
 
     return list;
-  }, [allData, query, localCategoryFilter, category]);
+  }, [allData, query, category]);
 
   // Reset page when filters change
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -75,11 +57,6 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
 
   const handleQueryChange = (val: string) => {
     setQuery(val);
-    setPage(0);
-  };
-
-  const handleCategoryChange = (cat: string) => {
-    setLocalCategoryFilter(cat);
     setPage(0);
   };
 
@@ -96,31 +73,6 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
             onChange={(e) => handleQueryChange(e.target.value)}
             className="max-w-xs"
           />
-          {category === "ALL" && (
-            <div className="flex gap-1.5">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => handleCategoryChange(cat)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    localCategoryFilter === cat
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                  style={
-                    localCategoryFilter === cat && cat !== "全て"
-                      ? {
-                          backgroundColor: CATEGORY_COLORS[cat],
-                          color: "#000",
-                        }
-                      : undefined
-                  }
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          )}
           <span className="text-xs text-muted-foreground">
             {filtered.length}件
           </span>
@@ -131,7 +83,6 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
             <TableRow>
               <TableHead className="w-14">No.</TableHead>
               <TableHead>氏名</TableHead>
-              <TableHead>カテゴリ</TableHead>
               <TableHead className="w-14">順位</TableHead>
               <TableHead>タイム</TableHead>
             </TableRow>
@@ -147,17 +98,6 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
                   >
                     {r.name}
                   </Link>
-                </TableCell>
-                <TableCell>
-                  <span
-                    className="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
-                    style={{
-                      backgroundColor: `${CATEGORY_COLORS[r.category]}20`,
-                      color: CATEGORY_COLORS[r.category],
-                    }}
-                  >
-                    {r.category}
-                  </span>
                 </TableCell>
                 <TableCell className="tabular-nums">
                   {typeof r.rank === "number" ? r.rank : r.rank}

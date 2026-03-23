@@ -17,8 +17,7 @@ export function SpeedGauge({ category }: SpeedGaugeProps) {
 
   const { speed, name, cat } = useMemo(() => {
     const allData = results as unknown as AthleteResult[];
-    const categoriesToCheck: Array<"200km" | "100km" | "50km"> =
-      category === "ALL" ? ["200km", "100km", "50km"] : [category];
+    const categoriesToCheck: Array<"200km" | "100km" | "50km"> = [category];
 
     let fastest: AthleteResult | null = null;
     let fastestSpeed = 0;

@@ -17,12 +17,6 @@ import { timeToSeconds, lapTimeToMinutes, formatTime } from "@/lib/time-utils";
 import { calcCV, calcDeviation, mean } from "@/lib/stats";
 import type { CategoryFilter } from "@/components/category-filter";
 
-const CATEGORY_COLORS: Record<string, string> = {
-  "200km": "#22d3ee",
-  "100km": "#4ade80",
-  "50km": "#fb923c",
-};
-
 interface PerformanceRankingProps {
   category: CategoryFilter;
 }
@@ -103,12 +97,7 @@ export function StabilityRanking({ category }: PerformanceRankingProps) {
   const allData = results as unknown as AthleteResult[];
 
   const ranking = useMemo(() => {
-    const categories: ("200km" | "100km" | "50km")[] =
-      category === "ALL"
-        ? ["200km", "100km", "50km"]
-        : [category as "200km" | "100km" | "50km"];
-
-    const all = categories.flatMap((cat) => computeForCategory(allData, cat));
+    const all = computeForCategory(allData, category);
     all.sort((a, b) => b.overallScore - a.overallScore);
     return all.slice(0, 10);
   }, [allData, category]);
@@ -132,7 +121,6 @@ export function StabilityRanking({ category }: PerformanceRankingProps) {
               <TableHead className="text-right">タイム</TableHead>
               <TableHead className="text-right">安定性</TableHead>
               <TableHead className="text-right">維持率</TableHead>
-              {category === "ALL" && <TableHead>カテゴリ</TableHead>}
               <TableHead>タイム</TableHead>
             </TableRow>
           </TableHeader>
@@ -176,19 +164,6 @@ export function StabilityRanking({ category }: PerformanceRankingProps) {
                 <TableCell className="text-right tabular-nums text-xs">
                   {r.retentionScore.toFixed(1)}
                 </TableCell>
-                {category === "ALL" && (
-                  <TableCell>
-                    <span
-                      className="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
-                      style={{
-                        backgroundColor: `${CATEGORY_COLORS[r.category]}20`,
-                        color: CATEGORY_COLORS[r.category],
-                      }}
-                    >
-                      {r.category}
-                    </span>
-                  </TableCell>
-                )}
                 <TableCell className="tabular-nums text-xs">
                   {formatTime(r.totalTime)}
                 </TableCell>

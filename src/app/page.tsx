@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { KpiCards } from "@/components/kpi-cards";
 import { TimeDistribution } from "@/components/time-distribution";
 import { Top10WithLap } from "@/components/top10-with-lap";
@@ -18,6 +18,18 @@ import type { CategoryFilter } from "@/components/category-filter";
 import race from "@/data/race.json";
 import type { RaceMetadata } from "@/lib/types";
 
+const VALID_CATEGORIES: CategoryFilter[] = ["200km", "100km", "50km"];
+
+function readCategoryFromURL(): CategoryFilter {
+  if (typeof window === "undefined") return "200km";
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get("category");
+  if (cat && VALID_CATEGORIES.includes(cat as CategoryFilter)) {
+    return cat as CategoryFilter;
+  }
+  return "200km";
+}
+
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="text-xl font-bold tracking-tight">{children}</h2>
@@ -26,7 +38,18 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 
 export default function Home() {
   const raceData = race as unknown as RaceMetadata;
-  const [category, setCategory] = useState<CategoryFilter>("ALL");
+  const [category, setCategory] = useState<CategoryFilter>("200km");
+
+  useEffect(() => {
+    setCategory(readCategoryFromURL());
+  }, []);
+
+  const handleCategoryChange = (value: CategoryFilter) => {
+    setCategory(value);
+    const url = new URL(window.location.href);
+    url.searchParams.set("category", value);
+    window.history.replaceState({}, "", url.toString());
+  };
 
   return (
     <main className="container mx-auto space-y-8 px-4 py-8">
@@ -43,7 +66,7 @@ export default function Home() {
       </div>
 
       {/* Category Filter */}
-      <CategoryFilterBar value={category} onChange={setCategory} />
+      <CategoryFilterBar value={category} onChange={handleCategoryChange} />
 
       {/* KPI Cards + Speed Gauge */}
       <section>
@@ -80,13 +103,11 @@ export default function Home() {
         <RankProgression category={category} />
       </section>
 
-      {/* Lap Heatmap (only visible when a category is selected) */}
-      {category !== "ALL" && (
-        <section className="space-y-3">
-          <SectionHeader>ラップタイム ヒートマップ</SectionHeader>
-          <LapHeatmap category={category} />
-        </section>
-      )}
+      {/* Lap Heatmap */}
+      <section className="space-y-3">
+        <SectionHeader>ラップタイム ヒートマップ</SectionHeader>
+        <LapHeatmap category={category} />
+      </section>
 
       {/* Statistics */}
       <section className="space-y-3">
