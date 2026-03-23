@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { StructuredData } from "@/components/structured-data";
+import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/gtm";
 import "./globals.css";
 
 const inter = Inter({
@@ -63,7 +64,11 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${notoSansJP.variable} h-full antialiased`}
     >
+      <head>
+        <GoogleTagManager />
+      </head>
       <body className="min-h-full flex flex-col">
+        <GoogleTagManagerNoscript />
         <StructuredData />
         <ThemeProvider>
           <Nav />
