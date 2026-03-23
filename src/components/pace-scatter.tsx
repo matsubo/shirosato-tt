@@ -170,7 +170,7 @@ export function PaceScatter({ category, highlightNo }: PaceScatterProps) {
               const point = (scatterData[cat] ?? []).find((p) => p.no === highlightNo);
               if (!point) return null;
               return {
-                name: point.name,
+                name: `★ ${point.name}`,
                 type: "scatter" as const,
                 data: [
                   {
@@ -180,22 +180,29 @@ export function PaceScatter({ category, highlightNo }: PaceScatterProps) {
                     category: point.category,
                   },
                 ],
-                symbolSize: 16,
+                symbolSize: 24,
+                symbol: "pin",
                 itemStyle: {
                   color: "#fbbf24",
                   borderColor: "#fff",
-                  borderWidth: 2,
+                  borderWidth: 3,
                   opacity: 1,
+                  shadowBlur: 15,
+                  shadowColor: "rgba(251, 191, 36, 0.7)",
                 },
                 label: {
                   show: true,
-                  formatter: point.name,
+                  formatter: `★ ${point.name}`,
                   position: "top" as const,
-                  fontSize: 12,
+                  distance: 12,
+                  fontSize: 13,
                   fontWeight: "bold" as const,
                   color: "#fbbf24",
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                  padding: [4, 8],
+                  borderRadius: 4,
                 },
-                z: 10,
+                z: 100,
               };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }).filter(Boolean) as any[]
