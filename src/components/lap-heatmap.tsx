@@ -40,18 +40,20 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
   const totalPages = Math.ceil(allFinished.length / PAGE_SIZE);
   const currentPage = Math.min(page, totalPages - 1);
 
-  // Compute global min/max across ALL athletes for consistent color scale
+  // Compute global min/max using percentiles to exclude outliers
   const { globalMin, globalMax } = useMemo(() => {
-    let min = Infinity;
-    let max = -Infinity;
+    const allSecs: number[] = [];
     for (const r of allFinished) {
       for (const l of r.lapTimes) {
-        const sec = timeToSeconds(l.time);
-        if (sec < min) min = sec;
-        if (sec > max) max = sec;
+        allSecs.push(timeToSeconds(l.time));
       }
     }
-    return { globalMin: min, globalMax: max };
+    if (allSecs.length === 0) return { globalMin: 0, globalMax: 600 };
+    allSecs.sort((a, b) => a - b);
+    // Use 1st and 97th percentile to exclude extreme outliers
+    const p1 = allSecs[Math.floor(allSecs.length * 0.01)];
+    const p97 = allSecs[Math.floor(allSecs.length * 0.97)];
+    return { globalMin: p1, globalMax: p97 };
   }, [allFinished]);
 
   const option: EChartsOption | null = useMemo(() => {
