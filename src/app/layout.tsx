@@ -48,8 +48,15 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "第11回しろさとTT200 TT Analytics",
     description:
-      "しろさとTT200のレースデータを可視化するBIダッシュボード。ラップタイム分析、チーム比較、走行パフォーマンスを提供します。",
-    images: [`${siteUrl}/og-image.png`],
+      "第11回しろさとTT200の全372選手のリザルト・ラップタイムをBIダッシュボードで徹底分析。",
+    images: [
+      {
+        url: `${siteUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "第11回 しろさとTT200 TT Analytics Dashboard",
+      },
+    ],
   },
 };
 
