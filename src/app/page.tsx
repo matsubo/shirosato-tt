@@ -14,6 +14,7 @@ import { TimeBoxplot } from "@/components/time-boxplot";
 import { LapHeatmap } from "@/components/lap-heatmap";
 import { RankProgression } from "@/components/rank-progression";
 import type { CategoryFilter } from "@/components/category-filter";
+import { CourseMap } from "@/components/course-map";
 import race from "@/data/race.json";
 import type { RaceMetadata } from "@/lib/types";
 
@@ -67,11 +68,14 @@ export default function Home() {
       {/* Category Filter */}
       <CategoryFilterBar value={category} onChange={handleCategoryChange} />
 
-      {/* KPI Cards + Speed Gauge */}
+      {/* KPI Cards + Speed Gauge + Course Map */}
       <section>
         <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
           <KpiCards category={category} />
-          <SpeedGauge category={category} />
+          <div className="space-y-4">
+            <SpeedGauge category={category} />
+            <CourseMap />
+          </div>
         </div>
       </section>
 
