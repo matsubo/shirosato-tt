@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EChart, useChartTheme, COLORS } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
 import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
+import race from "@/data/race.json";
+import type { AthleteResult, RaceMetadata } from "@/lib/types";
+import { timeToSeconds } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
 
 interface SpeedGaugeProps {
@@ -14,32 +16,44 @@ interface SpeedGaugeProps {
 
 export function SpeedGauge({ category }: SpeedGaugeProps) {
   const theme = useChartTheme();
+  const raceData = race as unknown as RaceMetadata;
 
-  const { speed, name, cat } = useMemo(() => {
+  const { speed, name, lapNum } = useMemo(() => {
     const allData = results as unknown as AthleteResult[];
-    const categoriesToCheck: Array<"200km" | "100km" | "50km"> = [category];
+    const catData = allData.filter(
+      (r) =>
+        r.category === category &&
+        (r.status === "finished" || r.status === "OPEN") &&
+        r.lapTimes &&
+        r.lapTimes.length > 0
+    );
 
-    let fastest: AthleteResult | null = null;
+    const catInfo = raceData.categories.find((c) => c.name === category);
+    const lapDistKm = catInfo?.lapDistance ?? 5.6663;
+
     let fastestSpeed = 0;
+    let fastestName = "";
+    let fastestLap = 0;
 
-    for (const c of categoriesToCheck) {
-      const finished = allData.filter(
-        (r) => r.category === c && r.status === "finished" && r.avgSpeed
-      );
-      for (const r of finished) {
-        if (r.avgSpeed && r.avgSpeed > fastestSpeed) {
-          fastestSpeed = r.avgSpeed;
-          fastest = r;
+    for (const r of catData) {
+      for (const lt of r.lapTimes) {
+        const sec = timeToSeconds(lt.time);
+        if (sec <= 0) continue;
+        const speedKmh = (lapDistKm / sec) * 3600;
+        if (speedKmh > fastestSpeed) {
+          fastestSpeed = speedKmh;
+          fastestName = `${r.name} (#${r.no})`;
+          fastestLap = lt.lap;
         }
       }
     }
 
     return {
       speed: fastestSpeed,
-      name: fastest ? `${fastest.name} (#${fastest.no})` : "",
-      cat: fastest ? fastest.category : "",
+      name: fastestName,
+      lapNum: fastestLap,
     };
-  }, [category]);
+  }, [category, raceData]);
 
   const option: EChartsOption = useMemo(
     () => ({
@@ -49,8 +63,8 @@ export function SpeedGauge({ category }: SpeedGaugeProps) {
           startAngle: 210,
           endAngle: -30,
           min: 25,
-          max: 50,
-          splitNumber: 5,
+          max: 55,
+          splitNumber: 6,
           progress: {
             show: true,
             width: 18,
@@ -113,7 +127,7 @@ export function SpeedGauge({ category }: SpeedGaugeProps) {
           data: [
             {
               value: parseFloat(speed.toFixed(1)),
-              name: `${name} (${cat})`,
+              name: `${name} Lap${lapNum}`,
             },
           ],
           animationDuration: 1200,
@@ -121,7 +135,7 @@ export function SpeedGauge({ category }: SpeedGaugeProps) {
         },
       ],
     }),
-    [speed, name, cat, theme]
+    [speed, name, lapNum, theme]
   );
 
   if (speed === 0) return null;
@@ -129,7 +143,7 @@ export function SpeedGauge({ category }: SpeedGaugeProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>最速平均速度</CardTitle>
+        <CardTitle>ラップ最高速度</CardTitle>
       </CardHeader>
       <CardContent>
         <EChart option={option} style={{ width: "100%", height: "260px" }} />
