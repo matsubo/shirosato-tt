@@ -102,7 +102,7 @@ export function CourseMap() {
 
       map = L.map(mapRef.current, {
         center: CENTER,
-        zoom: 15,
+        zoom: 13,
         zoomControl: true,
         attributionControl: true,
         scrollWheelZoom: false,
