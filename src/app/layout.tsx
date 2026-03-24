@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     siteName: "しろさとTT200 TT Analytics",
     images: [
       {
-        url: `${siteUrl}/og-image.png`,
+        url: `${siteUrl}/og-image-v2.png`,
         width: 1200,
         height: 630,
         alt: "第11回 しろさとTT200 TT Analytics Dashboard",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
       "第11回しろさとTT200の全372選手のリザルト・ラップタイムをBIダッシュボードで徹底分析。",
     images: [
       {
-        url: `${siteUrl}/og-image.png`,
+        url: `${siteUrl}/og-image-v2.png`,
         width: 1200,
         height: 630,
         alt: "第11回 しろさとTT200 TT Analytics Dashboard",

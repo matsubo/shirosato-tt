@@ -64,7 +64,7 @@ export function generateMetadata({
         description: desc,
         images: [
           {
-            url: `${siteUrl}/og-image.png`,
+            url: `${siteUrl}/og-image-v2.png`,
             width: 1200,
             height: 630,
             alt: "第11回 しろさとTT200 TT Analytics Dashboard",
@@ -75,7 +75,7 @@ export function generateMetadata({
         card: "summary_large_image",
         title,
         description: desc,
-        images: [`${siteUrl}/og-image.png`],
+        images: [`${siteUrl}/og-image-v2.png`],
       },
     };
   });
