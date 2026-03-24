@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ShareButtons } from "@/components/share-buttons";
 
 export function Nav() {
   return (
@@ -11,7 +12,10 @@ export function Nav() {
           </span>
           <span className="text-sm text-muted-foreground">TT Analytics</span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <ShareButtons />
+          <ThemeToggle />
+        </div>
       </nav>
     </header>
   );
