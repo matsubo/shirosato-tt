@@ -24,6 +24,14 @@ export const metadata: Metadata = {
   title: "第11回しろさとTT200 TT Analytics",
   description:
     "第11回しろさとTT200（2026年3月22日・城里テストセンター）の全372選手のレース結果・ラップタイムをBIダッシュボードで徹底分析。200km/100km/50kmカテゴリ別の統計、偏差値、ペーシング、CdA推定など。",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icon-192.png',
+  },
+  manifest: '/manifest.json',
   alternates: {
     canonical: siteUrl,
   },
