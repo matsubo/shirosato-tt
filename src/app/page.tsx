@@ -53,29 +53,29 @@ export default function Home() {
 
   return (
     <main className="container mx-auto space-y-8 px-4 py-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          {raceData.raceName}
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          {raceData.date} {raceData.location} / {raceData.weather.condition}{" "}
-          {raceData.weather.temperature}&#8451; 湿度{raceData.weather.humidity}%{" "}
-          {raceData.weather.wind}
-        </p>
+      {/* Header + Course Map */}
+      <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {raceData.raceName}
+          </h1>
+          <p className="mt-1 text-muted-foreground">
+            {raceData.date} {raceData.location} / {raceData.weather.condition}{" "}
+            {raceData.weather.temperature}&#8451; 湿度{raceData.weather.humidity}%{" "}
+            {raceData.weather.wind}
+          </p>
+        </div>
+        <CourseMap />
       </div>
 
       {/* Category Filter */}
       <CategoryFilterBar value={category} onChange={handleCategoryChange} />
 
-      {/* KPI Cards + Speed Gauge + Course Map */}
+      {/* KPI Cards + Speed Gauge */}
       <section>
         <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
           <KpiCards category={category} />
-          <div className="space-y-4">
-            <SpeedGauge category={category} />
-            <CourseMap />
-          </div>
+          <SpeedGauge category={category} />
         </div>
       </section>
 
