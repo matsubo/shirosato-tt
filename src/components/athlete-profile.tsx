@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { AthleteResult, RaceMetadata } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatTime, timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult, RaceMetadata } from "@/lib/types";
 
 interface AthleteProfileProps {
   athlete: AthleteResult;
@@ -54,21 +54,11 @@ function getStatusBadge(athlete: AthleteResult) {
   }
 }
 
-export function AthleteProfile({
-  athlete,
-  race,
-  categoryRank,
-  genderRank,
-}: AthleteProfileProps) {
-  const categoryInfo = race.categories.find(
-    (c) => c.name === athlete.category
-  );
+export function AthleteProfile({ athlete, race, categoryRank, genderRank }: AthleteProfileProps) {
+  const categoryInfo = race.categories.find((c) => c.name === athlete.category);
   const totalDistance = categoryInfo?.distance ?? 0;
-  const totalSeconds = athlete.totalTime
-    ? timeToSeconds(athlete.totalTime)
-    : 0;
-  const avgSpeed =
-    totalSeconds > 0 ? (totalDistance / (totalSeconds / 3600)).toFixed(1) : null;
+  const totalSeconds = athlete.totalTime ? timeToSeconds(athlete.totalTime) : 0;
+  const avgSpeed = totalSeconds > 0 ? (totalDistance / (totalSeconds / 3600)).toFixed(1) : null;
 
   return (
     <Card>
@@ -80,9 +70,7 @@ export function AthleteProfile({
           <div className="flex-1">
             <CardTitle className="text-2xl">{athlete.name}</CardTitle>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <Badge
-                className={`border ${getCategoryColor(athlete.category)}`}
-              >
+              <Badge className={`border ${getCategoryColor(athlete.category)}`}>
                 {athlete.category}
               </Badge>
               <Badge variant="outline">{athlete.gender}</Badge>
@@ -96,17 +84,13 @@ export function AthleteProfile({
           {athlete.totalTime && (
             <div>
               <p className="text-xs text-muted-foreground">Total Time</p>
-              <p className="text-lg font-semibold tabular-nums">
-                {formatTime(athlete.totalTime)}
-              </p>
+              <p className="text-lg font-semibold tabular-nums">{formatTime(athlete.totalTime)}</p>
             </div>
           )}
           {avgSpeed && (
             <div>
               <p className="text-xs text-muted-foreground">Avg Speed</p>
-              <p className="text-lg font-semibold tabular-nums">
-                {avgSpeed} km/h
-              </p>
+              <p className="text-lg font-semibold tabular-nums">{avgSpeed} km/h</p>
             </div>
           )}
           {typeof athlete.rank === "number" && categoryRank && (
@@ -114,10 +98,7 @@ export function AthleteProfile({
               <p className="text-xs text-muted-foreground">総合順位</p>
               <p className="text-lg font-semibold">
                 {athlete.rank}
-                <span className="text-sm text-muted-foreground">
-                  {" "}
-                  / {categoryRank.total}
-                </span>
+                <span className="text-sm text-muted-foreground"> / {categoryRank.total}</span>
               </p>
             </div>
           )}
@@ -128,10 +109,7 @@ export function AthleteProfile({
               </p>
               <p className="text-lg font-semibold">
                 {genderRank.rank}
-                <span className="text-sm text-muted-foreground">
-                  {" "}
-                  / {genderRank.total}
-                </span>
+                <span className="text-sm text-muted-foreground"> / {genderRank.total}</span>
               </p>
             </div>
           )}
@@ -139,10 +117,7 @@ export function AthleteProfile({
             <p className="text-xs text-muted-foreground">Laps</p>
             <p className="text-lg font-semibold">
               {athlete.lapTimes.length}
-              <span className="text-sm text-muted-foreground">
-                {" "}
-                / {categoryInfo?.laps ?? "?"}
-              </span>
+              <span className="text-sm text-muted-foreground"> / {categoryInfo?.laps ?? "?"}</span>
             </p>
           </div>
         </div>

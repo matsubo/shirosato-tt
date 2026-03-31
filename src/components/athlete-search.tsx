@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
+import { useMemo, useState } from "react";
+import type { CategoryFilter } from "@/components/category-filter";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -12,12 +15,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
 import { formatTime } from "@/lib/time-utils";
-import type { CategoryFilter } from "@/components/category-filter";
+import type { AthleteResult } from "@/lib/types";
 
 const PAGE_SIZE = 20;
 
@@ -35,10 +35,7 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
 
     if (query.trim()) {
       const q = query.trim().toLowerCase();
-      list = list.filter(
-        (r) =>
-          r.name.toLowerCase().includes(q) || String(r.no).includes(q)
-      );
+      list = list.filter((r) => r.name.toLowerCase().includes(q) || String(r.no).includes(q));
     }
 
     list.sort((a, b) => {
@@ -48,7 +45,7 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
     });
 
     return list;
-  }, [allData, query, category]);
+  }, [query, category]);
 
   // Reset page when filters change
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -73,9 +70,7 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
             onChange={(e) => handleQueryChange(e.target.value)}
             className="max-w-xs"
           />
-          <span className="text-xs text-muted-foreground">
-            {filtered.length}件
-          </span>
+          <span className="text-xs text-muted-foreground">{filtered.length}件</span>
         </div>
 
         <Table>
@@ -114,7 +109,8 @@ export function AthleteSearch({ category }: AthleteSearchProps) {
         {totalPages > 1 && (
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              {currentPage * PAGE_SIZE + 1} - {Math.min((currentPage + 1) * PAGE_SIZE, filtered.length)} / {filtered.length}件
+              {currentPage * PAGE_SIZE + 1} -{" "}
+              {Math.min((currentPage + 1) * PAGE_SIZE, filtered.length)} / {filtered.length}件
             </p>
             <div className="flex items-center gap-1">
               <Button

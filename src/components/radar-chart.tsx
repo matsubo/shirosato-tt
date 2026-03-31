@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, COLORS } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
-import type { AthleteResult, RaceMetadata } from "@/lib/types";
+import { COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { calcCV, mean, stddev } from "@/lib/stats";
 import { timeToSeconds } from "@/lib/time-utils";
-import { mean, stddev, calcCV } from "@/lib/stats";
+import type { AthleteResult, RaceMetadata } from "@/lib/types";
 
 interface RadarChartProps {
   athlete: AthleteResult;
@@ -14,11 +14,7 @@ interface RadarChartProps {
   race: RaceMetadata;
 }
 
-function calcHensachi(
-  value: number,
-  values: number[],
-  inverted: boolean
-): number {
+function calcHensachi(value: number, values: number[], inverted: boolean): number {
   const sd = stddev(values);
   if (sd === 0) return 50;
   const avg = mean(values);
@@ -32,32 +28,20 @@ function clampHensachi(v: number): number {
   return Math.max(20, Math.min(80, v));
 }
 
-export function RadarChartComponent({
-  athlete,
-  categoryAthletes,
-  race,
-}: RadarChartProps) {
+export function RadarChartComponent({ athlete, categoryAthletes, race }: RadarChartProps) {
   const theme = useChartTheme();
 
-  const finished = categoryAthletes.filter(
-    (a) => a.status === "finished" || a.status === "OPEN"
-  );
+  const finished = categoryAthletes.filter((a) => a.status === "finished" || a.status === "OPEN");
   if (finished.length < 2) return null;
 
-  const categoryInfo = race.categories.find(
-    (c) => c.name === athlete.category
-  );
+  const categoryInfo = race.categories.find((c) => c.name === athlete.category);
 
   const totalTimes = finished
     .map((a) => (a.totalTime ? timeToSeconds(a.totalTime) : 0))
     .filter((t) => t > 0);
-  const athleteTotalTime = athlete.totalTime
-    ? timeToSeconds(athlete.totalTime)
-    : 0;
+  const athleteTotalTime = athlete.totalTime ? timeToSeconds(athlete.totalTime) : 0;
 
-  const lapSecondsList = finished.map((a) =>
-    a.lapTimes.map((l) => timeToSeconds(l.time))
-  );
+  const lapSecondsList = finished.map((a) => a.lapTimes.map((l) => timeToSeconds(l.time)));
   const cvs = lapSecondsList.map((laps) => calcCV(laps));
   const athleteLaps = athlete.lapTimes.map((l) => timeToSeconds(l.time));
   const athleteCV = calcCV(athleteLaps);
@@ -69,18 +53,11 @@ export function RadarChartComponent({
     const second = mean(laps.slice(half));
     return first > 0 ? second / first : 1;
   });
-  const athleteFirstHalf = mean(
-    athleteLaps.slice(0, Math.floor(athleteLaps.length / 2))
-  );
-  const athleteSecondHalf = mean(
-    athleteLaps.slice(Math.floor(athleteLaps.length / 2))
-  );
-  const athleteRetention =
-    athleteFirstHalf > 0 ? athleteSecondHalf / athleteFirstHalf : 1;
+  const athleteFirstHalf = mean(athleteLaps.slice(0, Math.floor(athleteLaps.length / 2)));
+  const athleteSecondHalf = mean(athleteLaps.slice(Math.floor(athleteLaps.length / 2)));
+  const athleteRetention = athleteFirstHalf > 0 ? athleteSecondHalf / athleteFirstHalf : 1;
 
-  const bestLaps = finished.map((a) =>
-    Math.min(...a.lapTimes.map((l) => timeToSeconds(l.time)))
-  );
+  const bestLaps = finished.map((a) => Math.min(...a.lapTimes.map((l) => timeToSeconds(l.time))));
   const athleteBestLap = Math.min(...athleteLaps);
 
   const avgSpeeds = finished.map((a) => {
@@ -89,9 +66,7 @@ export function RadarChartComponent({
     return totalSec > 0 ? dist / totalSec : 0;
   });
   const athleteAvgSpeed =
-    athleteTotalTime > 0
-      ? ((categoryInfo?.distance ?? 0) * 1000) / athleteTotalTime
-      : 0;
+    athleteTotalTime > 0 ? ((categoryInfo?.distance ?? 0) * 1000) / athleteTotalTime : 0;
 
   const data = [
     {
@@ -104,9 +79,7 @@ export function RadarChartComponent({
     },
     {
       axis: "後半維持率",
-      value: clampHensachi(
-        calcHensachi(athleteRetention, secondHalfRetentions, true)
-      ),
+      value: clampHensachi(calcHensachi(athleteRetention, secondHalfRetentions, true)),
     },
     {
       axis: "ベストラップ",
@@ -144,7 +117,12 @@ export function RadarChartComponent({
         splitArea: {
           areaStyle: {
             color: theme.isDark
-              ? ["rgba(34,211,238,0.02)", "rgba(34,211,238,0.05)", "rgba(34,211,238,0.02)", "rgba(34,211,238,0.05)"]
+              ? [
+                  "rgba(34,211,238,0.02)",
+                  "rgba(34,211,238,0.05)",
+                  "rgba(34,211,238,0.02)",
+                  "rgba(34,211,238,0.05)",
+                ]
               : ["rgba(0,0,0,0.01)", "rgba(0,0,0,0.03)", "rgba(0,0,0,0.01)", "rgba(0,0,0,0.03)"],
           },
         },
@@ -166,8 +144,8 @@ export function RadarChartComponent({
                   y: 0.5,
                   r: 0.5,
                   colorStops: [
-                    { offset: 0, color: COLORS.cyan + "40" },
-                    { offset: 1, color: COLORS.cyan + "10" },
+                    { offset: 0, color: `${COLORS.cyan}40` },
+                    { offset: 1, color: `${COLORS.cyan}10` },
                   ],
                 },
               },
@@ -181,7 +159,7 @@ export function RadarChartComponent({
         },
       ],
     }),
-    [data, theme]
+    [data, theme],
   );
 
   return (
@@ -194,9 +172,7 @@ export function RadarChartComponent({
         <div className="mt-2 grid grid-cols-5 gap-1 text-center text-xs text-muted-foreground">
           {data.map((d) => (
             <div key={d.axis}>
-              <span className="font-medium text-foreground">
-                {d.value.toFixed(1)}
-              </span>
+              <span className="font-medium text-foreground">{d.value.toFixed(1)}</span>
             </div>
           ))}
         </div>

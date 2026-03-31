@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, COLORS } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
+import { COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
 import { lapTimeToMinutes } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const LINE_COLORS = [COLORS.pink, COLORS.purple, COLORS.teal];
 
@@ -21,10 +21,7 @@ export function LapChart({ category, athleteNos }: LapChartProps) {
 
   const { chartData, riders, maxLaps } = useMemo(() => {
     const finished = data.filter(
-      (r) =>
-        r.category === category &&
-        r.status === "finished" &&
-        typeof r.rank === "number"
+      (r) => r.category === category && r.status === "finished" && typeof r.rank === "number",
     );
     finished.sort((a, b) => (a.rank as number) - (b.rank as number));
 
@@ -47,7 +44,7 @@ export function LapChart({ category, athleteNos }: LapChartProps) {
     }));
 
     return { chartData: laps, riders: ridersList, maxLaps: ml };
-  }, [category, athleteNos, data]);
+  }, [category, athleteNos]);
 
   if (riders.length === 0) return null;
 
@@ -99,9 +96,10 @@ export function LapChart({ category, athleteNos }: LapChartProps) {
         axisLabel: { fontSize: 12, color: theme.subTextColor },
         splitLine: { lineStyle: { color: theme.gridLineColor } },
       },
-      dataZoom: maxLaps > 20
-        ? [{ type: "slider", bottom: 25, height: 18, borderColor: theme.borderColor }]
-        : [],
+      dataZoom:
+        maxLaps > 20
+          ? [{ type: "slider", bottom: 25, height: 18, borderColor: theme.borderColor }]
+          : [],
       series: riders.map((rider, i) => ({
         name: rider.name,
         type: "line" as const,
@@ -118,8 +116,8 @@ export function LapChart({ category, athleteNos }: LapChartProps) {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: LINE_COLORS[i % LINE_COLORS.length] + "30" },
-              { offset: 1, color: LINE_COLORS[i % LINE_COLORS.length] + "05" },
+              { offset: 0, color: `${LINE_COLORS[i % LINE_COLORS.length]}30` },
+              { offset: 1, color: `${LINE_COLORS[i % LINE_COLORS.length]}05` },
             ],
           },
         },

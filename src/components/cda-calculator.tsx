@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { EChartsOption } from "@/components/echart";
+import { EChart, useChartTheme } from "@/components/echart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { EChart, useChartTheme } from "@/components/echart";
-import type { EChartsOption } from "@/components/echart";
-import type { AthleteResult, RaceMetadata } from "@/lib/types";
-import { timeToSeconds } from "@/lib/time-utils";
 import { calcCdAFromLapTime } from "@/lib/cda";
+import { timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult, RaceMetadata } from "@/lib/types";
 
 interface CdACalculatorProps {
   athlete: AthleteResult;
@@ -48,9 +48,7 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
 
   if (athlete.lapTimes.length === 0) return null;
 
-  const categoryInfo = race.categories.find(
-    (c) => c.name === athlete.category
-  );
+  const categoryInfo = race.categories.find((c) => c.name === athlete.category);
   const lapDistanceM = (categoryInfo?.lapDistance ?? 5.666) * 1000;
   const totalWeight = weight + 8;
 
@@ -71,10 +69,7 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
   });
 
   const validCdAs = lapCdAs.filter((l) => l.cda > 0).map((l) => l.cda);
-  const avgCdA =
-    validCdAs.length > 0
-      ? validCdAs.reduce((s, v) => s + v, 0) / validCdAs.length
-      : 0;
+  const avgCdA = validCdAs.length > 0 ? validCdAs.reduce((s, v) => s + v, 0) / validCdAs.length : 0;
   const minCda = Math.min(...validCdAs);
   const maxCda = Math.max(...validCdAs);
 
@@ -131,7 +126,7 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
         },
       ],
     }),
-    [lapCdAs, minCda, maxCda, theme]
+    [lapCdAs, minCda, maxCda, theme],
   );
 
   return (
@@ -145,9 +140,7 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
             <h4 className="mb-3 text-sm font-medium">入力パラメータ</h4>
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-muted-foreground">
-                  平均パワー (W)
-                </label>
+                <label className="text-xs text-muted-foreground">平均パワー (W)</label>
                 <Input
                   type="number"
                   value={power}
@@ -157,9 +150,7 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">
-                  体重 (kg)
-                </label>
+                <label className="text-xs text-muted-foreground">体重 (kg)</label>
                 <Input
                   type="number"
                   value={weight}
@@ -174,13 +165,10 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
             <h4 className="mb-3 text-sm font-medium">環境条件</h4>
             <div className="space-y-1 text-sm text-muted-foreground">
               <p>
-                気温: {race.weather.temperature}&deg;C / 湿度:{" "}
-                {race.weather.humidity}%
+                気温: {race.weather.temperature}&deg;C / 湿度: {race.weather.humidity}%
               </p>
               <p>風: {race.weather.wind}</p>
-              <p>
-                コース: 1周 {categoryInfo?.lapDistance ?? 5.666}km (フラット)
-              </p>
+              <p>コース: 1周 {categoryInfo?.lapDistance ?? 5.666}km (フラット)</p>
               <p>空気密度: {airDensity} kg/m&sup3;</p>
               <p>Crr: 0.004 / 駆動効率: 0.97</p>
               <p>
@@ -192,16 +180,15 @@ export function CdACalculator({ athlete, race }: CdACalculatorProps) {
 
         <div className="mb-6 rounded-lg bg-muted/50 p-4 text-center">
           <p className="text-xs text-muted-foreground">推定 CdA (平均)</p>
-          <p className="text-4xl font-bold tabular-nums text-primary">
-            {avgCdA.toFixed(4)}
-          </p>
+          <p className="text-4xl font-bold tabular-nums text-primary">{avgCdA.toFixed(4)}</p>
           <p className="text-xs text-muted-foreground">m&sup2;</p>
         </div>
 
         <EChart option={option} style={{ width: "100%", height: "200px" }} />
 
         <p className="mt-4 text-xs text-muted-foreground">
-          ※ この推定は一定速度を仮定しており、風の影響、加減速、コーナリングなどは考慮していません。実際のCdAとは異なる場合があります。
+          ※
+          この推定は一定速度を仮定しており、風の影響、加減速、コーナリングなどは考慮していません。実際のCdAとは異なる場合があります。
         </p>
       </CardContent>
     </Card>

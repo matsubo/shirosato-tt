@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, CATEGORY_COLORS } from "@/components/echart";
-import type { EChartsOption } from "@/components/echart";
-import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { lapTimeToMinutes } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
+import type { EChartsOption } from "@/components/echart";
+import { CATEGORY_COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import results from "@/data/results.json";
+import { lapTimeToMinutes } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const CATEGORY_CONFIG: Record<
   string,
@@ -26,10 +26,7 @@ interface PacePoint {
   category: string;
 }
 
-function calcHalfAvg(
-  lapTimes: AthleteResult["lapTimes"],
-  range: [number, number]
-): number | null {
+function calcHalfAvg(lapTimes: AthleteResult["lapTimes"], range: [number, number]): number | null {
   const laps = lapTimes.filter((l) => l.lap >= range[0] && l.lap <= range[1]);
   if (laps.length === 0) return null;
   const total = laps.reduce((sum, l) => sum + lapTimeToMinutes(l.time), 0);
@@ -53,10 +50,7 @@ export function PaceScatter({ category, highlightNo }: PaceScatterProps) {
     for (const cat of categoriesToShow) {
       const config = CATEGORY_CONFIG[cat];
       const finished = data.filter(
-        (r) =>
-          r.category === cat &&
-          r.status === "finished" &&
-          r.lapTimes.length > 0
+        (r) => r.category === cat && r.status === "finished" && r.lapTimes.length > 0,
       );
 
       const points: PacePoint[] = [];
@@ -82,7 +76,7 @@ export function PaceScatter({ category, highlightNo }: PaceScatterProps) {
     const max = allValues.length > 0 ? Math.ceil(Math.max(...allValues) + 0.5) : 15;
 
     return { scatterData: byCategory, minVal: min, maxVal: max };
-  }, [data, categoriesToShow]);
+  }, [categoriesToShow]);
 
   const option: EChartsOption = useMemo(
     () => ({
@@ -166,50 +160,52 @@ export function PaceScatter({ category, highlightNo }: PaceScatterProps) {
         })),
         // Highlighted athlete (if specified)
         ...(highlightNo
-          ? categoriesToShow.map((cat) => {
-              const point = (scatterData[cat] ?? []).find((p) => p.no === highlightNo);
-              if (!point) return null;
-              return {
-                name: `★ ${point.name}`,
-                type: "scatter" as const,
-                data: [
-                  {
-                    value: [point.firstHalf, point.secondHalf],
-                    name: point.name,
-                    no: point.no,
-                    category: point.category,
+          ? (categoriesToShow
+              .map((cat) => {
+                const point = (scatterData[cat] ?? []).find((p) => p.no === highlightNo);
+                if (!point) return null;
+                return {
+                  name: `★ ${point.name}`,
+                  type: "scatter" as const,
+                  data: [
+                    {
+                      value: [point.firstHalf, point.secondHalf],
+                      name: point.name,
+                      no: point.no,
+                      category: point.category,
+                    },
+                  ],
+                  symbolSize: 24,
+                  symbol: "pin",
+                  itemStyle: {
+                    color: "#fbbf24",
+                    borderColor: "#fff",
+                    borderWidth: 3,
+                    opacity: 1,
+                    shadowBlur: 15,
+                    shadowColor: "rgba(251, 191, 36, 0.7)",
                   },
-                ],
-                symbolSize: 24,
-                symbol: "pin",
-                itemStyle: {
-                  color: "#fbbf24",
-                  borderColor: "#fff",
-                  borderWidth: 3,
-                  opacity: 1,
-                  shadowBlur: 15,
-                  shadowColor: "rgba(251, 191, 36, 0.7)",
-                },
-                label: {
-                  show: true,
-                  formatter: `★ ${point.name}`,
-                  position: "top" as const,
-                  distance: 12,
-                  fontSize: 13,
-                  fontWeight: "bold" as const,
-                  color: "#fbbf24",
-                  backgroundColor: "rgba(0,0,0,0.7)",
-                  padding: [4, 8],
-                  borderRadius: 4,
-                },
-                z: 100,
-              };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            }).filter(Boolean) as any[]
+                  label: {
+                    show: true,
+                    formatter: `★ ${point.name}`,
+                    position: "top" as const,
+                    distance: 12,
+                    fontSize: 13,
+                    fontWeight: "bold" as const,
+                    color: "#fbbf24",
+                    backgroundColor: "rgba(0,0,0,0.7)",
+                    padding: [4, 8],
+                    borderRadius: 4,
+                  },
+                  z: 100,
+                };
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              })
+              .filter(Boolean) as any[])
           : []),
       ],
     }),
-    [categoriesToShow, scatterData, minVal, maxVal, theme]
+    [categoriesToShow, scatterData, minVal, maxVal, theme, highlightNo],
   );
 
   return (

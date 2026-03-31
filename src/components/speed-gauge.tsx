@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, COLORS } from "@/components/echart";
-import type { EChartsOption } from "@/components/echart";
-import results from "@/data/results.json";
-import race from "@/data/race.json";
-import type { AthleteResult, RaceMetadata } from "@/lib/types";
-import { timeToSeconds } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
+import type { EChartsOption } from "@/components/echart";
+import { COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import race from "@/data/race.json";
+import results from "@/data/results.json";
+import { timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult, RaceMetadata } from "@/lib/types";
 
 interface SpeedGaugeProps {
   category: CategoryFilter;
@@ -25,7 +25,7 @@ export function SpeedGauge({ category }: SpeedGaugeProps) {
         r.category === category &&
         (r.status === "finished" || r.status === "OPEN") &&
         r.lapTimes &&
-        r.lapTimes.length > 0
+        r.lapTimes.length > 0,
     );
 
     const catInfo = raceData.categories.find((c) => c.name === category);
@@ -53,7 +53,7 @@ export function SpeedGauge({ category }: SpeedGaugeProps) {
       name: fastestName,
       lapNum: fastestLap,
     };
-  }, [category, raceData]);
+  }, [category]);
 
   const option: EChartsOption = useMemo(
     () => ({
@@ -135,7 +135,7 @@ export function SpeedGauge({ category }: SpeedGaugeProps) {
         },
       ],
     }),
-    [speed, name, lapNum, theme]
+    [speed, name, lapNum, theme],
   );
 
   if (speed === 0) return null;

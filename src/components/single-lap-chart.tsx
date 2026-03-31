@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, COLORS } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
+import { COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { calcMovingAverage, mean } from "@/lib/stats";
+import { secondsToTime, timeToSeconds } from "@/lib/time-utils";
 import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds, secondsToTime } from "@/lib/time-utils";
-import { mean, calcMovingAverage } from "@/lib/stats";
 
 interface SingleLapChartProps {
   athlete: AthleteResult;
@@ -47,8 +47,8 @@ export function SingleLapChart({ athlete, categoryAvgLaps }: SingleLapChartProps
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: COLORS.cyan + "30" },
-              { offset: 1, color: COLORS.cyan + "05" },
+              { offset: 0, color: `${COLORS.cyan}30` },
+              { offset: 1, color: `${COLORS.cyan}05` },
             ],
           },
         },
@@ -170,7 +170,17 @@ export function SingleLapChart({ athlete, categoryAvgLaps }: SingleLapChartProps
       },
       series,
     };
-  }, [athlete.lapTimes, lapSeconds, movingAvg, avg, bestIdx, worstIdx, windowSize, categoryAvgLaps, theme]);
+  }, [
+    athlete.lapTimes,
+    lapSeconds,
+    movingAvg,
+    avg,
+    bestIdx,
+    worstIdx,
+    windowSize,
+    categoryAvgLaps,
+    theme,
+  ]);
 
   return (
     <Card>

@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, COLORS, CATEGORY_COLORS } from "@/components/echart";
-import type { EChartsOption } from "@/components/echart";
-import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds } from "@/lib/time-utils";
-import { calcDeviation } from "@/lib/stats";
 import type { CategoryFilter } from "@/components/category-filter";
+import type { EChartsOption } from "@/components/echart";
+import { CATEGORY_COLORS, COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import results from "@/data/results.json";
+import { calcDeviation } from "@/lib/stats";
+import { timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const GENDER_COLORS = [COLORS.blue, COLORS.pink];
 
@@ -49,8 +49,7 @@ function GenderRatioChart({ category }: { category: CategoryFilter }) {
         borderColor: theme.borderColor,
         textStyle: { color: theme.textColor },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        formatter: (params: any) =>
-          `${params.name}: ${params.value}人 (${params.percent}%)`,
+        formatter: (params: any) => `${params.name}: ${params.value}人 (${params.percent}%)`,
       },
       series: [
         {
@@ -87,7 +86,7 @@ function GenderRatioChart({ category }: { category: CategoryFilter }) {
         },
       ],
     };
-  }, [allData, category, theme]);
+  }, [category, theme]);
 
   return (
     <Card>
@@ -153,7 +152,7 @@ function AgeDistributionChart({ category }: { category: CategoryFilter }) {
                 y2: 1,
                 colorStops: [
                   { offset: 0, color: AGE_COLORS[d.name] ?? COLORS.purple },
-                  { offset: 1, color: (AGE_COLORS[d.name] ?? COLORS.purple) + "66" },
+                  { offset: 1, color: `${AGE_COLORS[d.name] ?? COLORS.purple}66` },
                 ],
               },
               borderRadius: [4, 4, 0, 0],
@@ -165,14 +164,13 @@ function AgeDistributionChart({ category }: { category: CategoryFilter }) {
             fontSize: 11,
             color: theme.subTextColor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) =>
-              params.value > 0 ? String(params.value) : "",
+            formatter: (params: any) => (params.value > 0 ? String(params.value) : ""),
           },
           animationDuration: 600,
         },
       ],
     };
-  }, [allData, category, theme]);
+  }, [category, theme]);
 
   return (
     <Card>
@@ -238,7 +236,7 @@ function PrefectureDistributionChart({ category }: { category: CategoryFilter })
               x2: 1,
               y2: 0,
               colorStops: [
-                { offset: 0, color: CATEGORY_COLORS["200km"] + "66" },
+                { offset: 0, color: `${CATEGORY_COLORS["200km"]}66` },
                 { offset: 1, color: CATEGORY_COLORS["200km"] },
               ],
             },
@@ -254,7 +252,7 @@ function PrefectureDistributionChart({ category }: { category: CategoryFilter })
         },
       ],
     };
-  }, [allData, category, theme]);
+  }, [category, theme]);
 
   return (
     <Card className="sm:col-span-2">
@@ -268,7 +266,7 @@ function PrefectureDistributionChart({ category }: { category: CategoryFilter })
   );
 }
 
-function DeviationDistributionChart({ category }: { category: CategoryFilter }) {
+function _DeviationDistributionChart({ category }: { category: CategoryFilter }) {
   const allData = results as unknown as AthleteResult[];
   const theme = useChartTheme();
 
@@ -279,7 +277,7 @@ function DeviationDistributionChart({ category }: { category: CategoryFilter }) 
 
     for (const cat of categoriesToProcess) {
       const finished = allData.filter(
-        (r) => r.category === cat && r.status === "finished" && r.totalTime
+        (r) => r.category === cat && r.status === "finished" && r.totalTime,
       );
       const times = finished.map((r) => timeToSeconds(r.totalTime!));
       for (const r of finished) {
@@ -290,16 +288,14 @@ function DeviationDistributionChart({ category }: { category: CategoryFilter }) 
 
     const bins: Array<{ label: string; count: number }> = [];
     for (let d = 20; d < 80; d += 5) {
-      const count = allDeviations.filter(
-        (v) => v.deviation >= d && v.deviation < d + 5
-      ).length;
+      const count = allDeviations.filter((v) => v.deviation >= d && v.deviation < d + 5).length;
       bins.push({ label: `${d}-${d + 5}`, count });
     }
 
     // Calculate normal curve overlay
     const totalCount = allDeviations.length;
     const normalData = bins.map((bin) => {
-      const mid = parseInt(bin.label) + 2.5;
+      const mid = parseInt(bin.label, 10) + 2.5;
       const z = (mid - 50) / 10;
       const pdf = (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * z * z);
       return Math.round(pdf * totalCount * 5 * 10) / 10;
@@ -339,7 +335,7 @@ function DeviationDistributionChart({ category }: { category: CategoryFilter }) 
               y2: 1,
               colorStops: [
                 { offset: 0, color: COLORS.purple },
-                { offset: 1, color: COLORS.purple + "66" },
+                { offset: 1, color: `${COLORS.purple}66` },
               ],
             },
             borderRadius: [4, 4, 0, 0],
@@ -350,8 +346,7 @@ function DeviationDistributionChart({ category }: { category: CategoryFilter }) 
             fontSize: 11,
             color: theme.subTextColor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) =>
-              params.value > 0 ? String(params.value) : "",
+            formatter: (params: any) => (params.value > 0 ? String(params.value) : ""),
           },
         },
         {
@@ -364,7 +359,7 @@ function DeviationDistributionChart({ category }: { category: CategoryFilter }) 
         },
       ],
     };
-  }, [allData, category, theme]);
+  }, [category, theme]);
 
   return (
     <Card>

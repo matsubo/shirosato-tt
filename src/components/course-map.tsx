@@ -1,8 +1,8 @@
 "use client";
 
+import { MapPin } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin } from "lucide-react";
 
 const STRAVA_SEGMENT = "https://www.strava.com/segments/27682873";
 
@@ -109,8 +109,7 @@ export function CourseMap() {
       });
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
         maxZoom: 18,
       }).addTo(map);
 

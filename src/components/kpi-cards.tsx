@@ -1,16 +1,8 @@
-import {
-  Users,
-  Trophy,
-  Percent,
-  AlertTriangle,
-  Timer,
-  TrendingUp,
-  Gauge,
-} from "lucide-react";
-import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds, secondsToTime } from "@/lib/time-utils";
+import { AlertTriangle, Gauge, Percent, Timer, TrendingUp, Trophy, Users } from "lucide-react";
 import type { CategoryFilter } from "@/components/category-filter";
+import results from "@/data/results.json";
+import { secondsToTime, timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
   "200km": "#22d3ee",
@@ -40,17 +32,15 @@ export function KpiCards({ category }: KpiCardsProps) {
 
   // Average time
   const times = sortedFinished.map((r) => timeToSeconds(r.totalTime!));
-  const avgTime = times.length > 0
-    ? secondsToTime(Math.round(times.reduce((a, b) => a + b, 0) / times.length))
-    : "-";
+  const avgTime =
+    times.length > 0
+      ? secondsToTime(Math.round(times.reduce((a, b) => a + b, 0) / times.length))
+      : "-";
 
   // Average speed
-  const speeds = finished
-    .filter((r) => r.avgSpeed)
-    .map((r) => r.avgSpeed!);
-  const avgSpeed = speeds.length > 0
-    ? (speeds.reduce((a, b) => a + b, 0) / speeds.length).toFixed(1)
-    : "-";
+  const speeds = finished.filter((r) => r.avgSpeed).map((r) => r.avgSpeed!);
+  const avgSpeed =
+    speeds.length > 0 ? (speeds.reduce((a, b) => a + b, 0) / speeds.length).toFixed(1) : "-";
 
   const accent = CATEGORY_COLORS[category] ?? "#22d3ee";
 
@@ -103,11 +93,11 @@ export function KpiCards({ category }: KpiCardsProps) {
       </div>
 
       {/* Fastest */}
-      <div className="relative overflow-hidden rounded-xl border bg-card p-4" style={{ borderColor: `${accent}40` }}>
-        <div
-          className="absolute inset-x-0 top-0 h-0.5"
-          style={{ backgroundColor: accent }}
-        />
+      <div
+        className="relative overflow-hidden rounded-xl border bg-card p-4"
+        style={{ borderColor: `${accent}40` }}
+      >
+        <div className="absolute inset-x-0 top-0 h-0.5" style={{ backgroundColor: accent }} />
         <div className="flex items-center gap-2" style={{ color: accent }}>
           <Timer className="h-4 w-4" />
           <span className="text-xs font-medium">最速タイム</span>

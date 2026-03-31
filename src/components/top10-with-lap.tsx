@@ -1,9 +1,9 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Top10TableContent } from "@/components/top10-table";
-import { LapChart } from "@/components/lap-chart";
 import type { CategoryFilter } from "@/components/category-filter";
+import { LapChart } from "@/components/lap-chart";
+import { Top10TableContent } from "@/components/top10-table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Top10WithLapProps {
   category: CategoryFilter;

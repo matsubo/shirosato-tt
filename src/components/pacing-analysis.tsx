@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { EChart, useChartTheme, COLORS } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds, formatTime, secondsToTime } from "@/lib/time-utils";
+import { COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { mean } from "@/lib/stats";
+import { formatTime, secondsToTime, timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 interface PacingAnalysisProps {
   athlete: AthleteResult;
@@ -15,7 +15,7 @@ interface PacingAnalysisProps {
 
 function getHalfSplit(
   category: string,
-  totalLaps: number
+  totalLaps: number,
 ): { firstEnd: number; secondStart: number } {
   switch (category) {
     case "200km":
@@ -37,18 +37,14 @@ export function PacingAnalysis({ athlete }: PacingAnalysisProps) {
   const theme = useChartTheme();
 
   const lapSeconds = athlete.lapTimes.map((l) => timeToSeconds(l.time));
-  const { firstEnd, secondStart } = getHalfSplit(
-    athlete.category,
-    athlete.lapTimes.length
-  );
+  const { firstEnd, secondStart } = getHalfSplit(athlete.category, athlete.lapTimes.length);
 
   const firstHalfLaps = lapSeconds.slice(0, firstEnd);
   const secondHalfLaps = lapSeconds.slice(secondStart - 1);
 
   const firstAvg = mean(firstHalfLaps);
   const secondAvg = mean(secondHalfLaps);
-  const declineRate =
-    firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0;
+  const declineRate = firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0;
   const isNegativeSplit = secondAvg <= firstAvg;
 
   const bestLapIdx = lapSeconds.indexOf(Math.min(...lapSeconds));
@@ -104,7 +100,7 @@ export function PacingAnalysis({ athlete }: PacingAnalysisProps) {
                   x2: 1,
                   y2: 0,
                   colorStops: [
-                    { offset: 0, color: COLORS.cyan + "88" },
+                    { offset: 0, color: `${COLORS.cyan}88` },
                     { offset: 1, color: COLORS.cyan },
                   ],
                 },
@@ -121,7 +117,7 @@ export function PacingAnalysis({ athlete }: PacingAnalysisProps) {
                   x2: 1,
                   y2: 0,
                   colorStops: [
-                    { offset: 0, color: (isNegativeSplit ? COLORS.green : COLORS.red) + "88" },
+                    { offset: 0, color: `${isNegativeSplit ? COLORS.green : COLORS.red}88` },
                     { offset: 1, color: isNegativeSplit ? COLORS.green : COLORS.red },
                   ],
                 },
@@ -168,15 +164,13 @@ export function PacingAnalysis({ athlete }: PacingAnalysisProps) {
           <div>
             <p className="text-xs text-muted-foreground">Best Lap</p>
             <p className="text-lg font-semibold tabular-nums text-green-400">
-              Lap {bestLapIdx + 1}:{" "}
-              {formatTime(athlete.lapTimes[bestLapIdx].time)}
+              Lap {bestLapIdx + 1}: {formatTime(athlete.lapTimes[bestLapIdx].time)}
             </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Worst Lap</p>
             <p className="text-lg font-semibold tabular-nums text-red-400">
-              Lap {worstLapIdx + 1}:{" "}
-              {formatTime(athlete.lapTimes[worstLapIdx].time)}
+              Lap {worstLapIdx + 1}: {formatTime(athlete.lapTimes[worstLapIdx].time)}
             </p>
           </div>
         </div>

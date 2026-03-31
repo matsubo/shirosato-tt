@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, COLORS } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds, secondsToTime } from "@/lib/time-utils";
+import { COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { mean } from "@/lib/stats";
+import { secondsToTime, timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 interface PacingWaterfallProps {
   athlete: AthleteResult;
@@ -85,7 +85,7 @@ export function PacingWaterfall({ athlete }: PacingWaterfallProps) {
           data: data.map((d) => ({
             value: d.diff,
             itemStyle: {
-              color: d.faster ? COLORS.green + "88" : COLORS.red + "88",
+              color: d.faster ? `${COLORS.green}88` : `${COLORS.red}88`,
               borderRadius: d.faster ? [0, 0, 2, 2] : [2, 2, 0, 0],
             },
           })),
@@ -113,8 +113,8 @@ export function PacingWaterfall({ athlete }: PacingWaterfallProps) {
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0, color: COLORS.orange + "20" },
-                { offset: 1, color: COLORS.orange + "05" },
+                { offset: 0, color: `${COLORS.orange}20` },
+                { offset: 1, color: `${COLORS.orange}05` },
               ],
             },
           },
@@ -130,8 +130,8 @@ export function PacingWaterfall({ athlete }: PacingWaterfallProps) {
       </CardHeader>
       <CardContent>
         <p className="mb-2 text-xs text-muted-foreground">
-          理想イーブンペース(平均ラップ {secondsToTime(Math.round(idealLap))})
-          との差分。正=遅い / 負=速い
+          理想イーブンペース(平均ラップ {secondsToTime(Math.round(idealLap))}) との差分。正=遅い /
+          負=速い
         </p>
         <EChart option={option} style={{ width: "100%", height: "280px" }} />
       </CardContent>

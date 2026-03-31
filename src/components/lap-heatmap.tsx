@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { EChart, useChartTheme } from "@/components/echart";
-import type { EChartsOption } from "@/components/echart";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds, secondsToTime } from "@/lib/time-utils";
+import { useMemo, useState } from "react";
 import type { CategoryFilter } from "@/components/category-filter";
+import type { EChartsOption } from "@/components/echart";
+import { EChart, useChartTheme } from "@/components/echart";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import results from "@/data/results.json";
+import { secondsToTime, timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const PAGE_SIZE = 30;
 
@@ -28,7 +28,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
         (r) =>
           r.category === category &&
           (r.status === "finished" || r.status === "OPEN") &&
-          r.lapTimes.length > 0
+          r.lapTimes.length > 0,
       )
       .sort((a, b) => {
         const ra = typeof a.rank === "number" ? a.rank : 9999;
@@ -59,10 +59,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
   const option: EChartsOption | null = useMemo(() => {
     if (allFinished.length === 0) return null;
 
-    const paged = allFinished.slice(
-      currentPage * PAGE_SIZE,
-      (currentPage + 1) * PAGE_SIZE
-    );
+    const paged = allFinished.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
     // Reverse so rank 1 is at the top (ECharts Y axis goes bottom→top)
     const reversed = [...paged].reverse();
@@ -70,17 +67,14 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
     const maxLaps = Math.max(...reversed.map((r) => r.lapTimes.length));
     const lapLabels = Array.from({ length: maxLaps }, (_, i) => `${i + 1}`);
     const riderLabels = reversed.map(
-      (r) =>
-        `${typeof r.rank === "number" ? r.rank : r.status}位 ${r.name}`
+      (r) => `${typeof r.rank === "number" ? r.rank : r.status}位 ${r.name}`,
     );
 
     const heatmapData: Array<[number, number, number | null]> = [];
 
     for (let ri = 0; ri < reversed.length; ri++) {
       for (let li = 0; li < maxLaps; li++) {
-        const lt = reversed[ri].lapTimes.find(
-          (l: { lap: number }) => l.lap === li + 1
-        );
+        const lt = reversed[ri].lapTimes.find((l: { lap: number }) => l.lap === li + 1);
         if (lt) {
           const sec = timeToSeconds(lt.time);
           heatmapData.push([li, ri, sec]);
@@ -160,7 +154,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
         },
       ],
     };
-  }, [category, allFinished, currentPage, theme, globalMin, globalMax]);
+  }, [allFinished, currentPage, theme, globalMin, globalMax]);
 
   if (option === null) return null;
 
@@ -202,10 +196,7 @@ export function LapHeatmap({ category }: LapHeatmapProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <EChart
-          option={option}
-          style={{ width: "100%", height: "500px" }}
-        />
+        <EChart option={option} style={{ width: "100%", height: "500px" }} />
       </CardContent>
     </Card>
   );

@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 const DATA_DIR = path.join(__dirname, "../src/data");
 
@@ -58,19 +58,28 @@ function parseCategoryHeader(headerLine: string): CategoryInfo | null {
   return {
     name: `${match[1]}km` as CategoryName,
     distance: parseFloat(match[2]),
-    laps: parseInt(match[3]),
+    laps: parseInt(match[3], 10),
   };
 }
 
 function parseResultLine(line: string, currentCategory: CategoryName): ParsedResult | null {
   const trimmed = line.trim();
   if (!trimmed) return null;
-  if (trimmed.startsWith("総合") || trimmed.startsWith("順位") || trimmed.startsWith("女子") || trimmed.startsWith("年齢区分")) return null;
+  if (
+    trimmed.startsWith("総合") ||
+    trimmed.startsWith("順位") ||
+    trimmed.startsWith("女子") ||
+    trimmed.startsWith("年齢区分")
+  )
+    return null;
   if (trimmed === "---PAGE---") return null;
   if (trimmed.match(/^第\d+回/)) return null;
 
   // Split by tab
-  const parts = trimmed.split("\t").map(s => s.trim()).filter(s => s !== "");
+  const parts = trimmed
+    .split("\t")
+    .map((s) => s.trim())
+    .filter((s) => s !== "");
 
   if (parts.length < 5) return null;
 
@@ -88,16 +97,16 @@ function parseResultLine(line: string, currentCategory: CategoryName): ParsedRes
     rank = "DNS";
     status = "DNS";
   } else {
-    rank = parseInt(rankStr);
-    if (isNaN(rank)) return null;
+    rank = parseInt(rankStr, 10);
+    if (Number.isNaN(rank)) return null;
     status = "finished";
   }
 
-  const bibNumber = parseInt(parts[1]);
-  if (isNaN(bibNumber)) return null;
+  const bibNumber = parseInt(parts[1], 10);
+  if (Number.isNaN(bibNumber)) return null;
 
   const name = parts[2];
-  const age = parseInt(parts[3]);
+  const age = parseInt(parts[3], 10);
   const gender = parts[4] as "男" | "女";
   const prefecture = parts[5];
 
@@ -117,54 +126,54 @@ function parseResultLine(line: string, currentCategory: CategoryName): ParsedRes
     if (remaining.length === 0) return null;
 
     // First remaining field should be totalTime (H:MM:SS format)
-    if (remaining[0] && remaining[0].match(/^\d+:\d{2}:\d{2}$/)) {
+    if (remaining[0]?.match(/^\d+:\d{2}:\d{2}$/)) {
       totalTime = remaining[0];
       const rest = remaining.slice(1);
 
       // Now parse the rest: optional P分, optional male/female rank, ageCategory, optional ageCategoryRank, averageSpeed
-      let idx = 0;
+      const idx = 0;
 
       // Check for penalty minutes (just a number before the rank fields)
-      if (rest[idx] && rest[idx].match(/^\d+$/) && !rest[idx].match(/km\/h$/)) {
-        const val = parseInt(rest[idx]);
+      if (rest[idx]?.match(/^\d+$/) && !rest[idx].match(/km\/h$/)) {
+        const _val = parseInt(rest[idx], 10);
         // Could be P分 or a rank - we need to look ahead
         // If next field is also a number, this might be P分
         // Pattern: [P分] [maleRank] ageCategory [ageCategoryRank] averageSpeed
         // or: [P分] [femaleRank] ageCategory averageSpeed
         // Check if this looks like P minutes (usually small number like 5)
         // Actually, let's look at the ageCategory field to determine
-        const ageCatIdx = rest.findIndex(r => r.match(/代[男女]子$/));
+        const ageCatIdx = rest.findIndex((r) => r.match(/代[男女]子$/));
         if (ageCatIdx >= 0) {
           // Everything before ageCategory that's a number
-          const nums = rest.slice(0, ageCatIdx).filter(r => r.match(/^\d+$/));
+          const nums = rest.slice(0, ageCatIdx).filter((r) => r.match(/^\d+$/));
 
           if (gender === "男") {
             if (status === "finished") {
               if (nums.length === 1) {
-                maleRank = parseInt(nums[0]);
+                maleRank = parseInt(nums[0], 10);
               } else if (nums.length === 2) {
                 // First could be penalty, second is maleRank
-                penaltyMinutes = parseInt(nums[0]);
-                maleRank = parseInt(nums[1]);
+                penaltyMinutes = parseInt(nums[0], 10);
+                maleRank = parseInt(nums[1], 10);
               }
             } else {
               // OPEN - no ranks
               if (nums.length === 1) {
-                penaltyMinutes = parseInt(nums[0]);
+                penaltyMinutes = parseInt(nums[0], 10);
               }
             }
           } else {
             // Female
             if (status === "finished") {
               if (nums.length === 1) {
-                femaleRank = parseInt(nums[0]);
+                femaleRank = parseInt(nums[0], 10);
               } else if (nums.length === 2) {
-                penaltyMinutes = parseInt(nums[0]);
-                femaleRank = parseInt(nums[1]);
+                penaltyMinutes = parseInt(nums[0], 10);
+                femaleRank = parseInt(nums[1], 10);
               }
             } else {
               if (nums.length === 1) {
-                penaltyMinutes = parseInt(nums[0]);
+                penaltyMinutes = parseInt(nums[0], 10);
               }
             }
           }
@@ -177,13 +186,13 @@ function parseResultLine(line: string, currentCategory: CategoryName): ParsedRes
             if (field.match(/km\/h$/)) {
               averageSpeed = parseFloat(field.replace("km/h", ""));
             } else if (field.match(/^\d+$/)) {
-              ageCategoryRank = parseInt(field);
+              ageCategoryRank = parseInt(field, 10);
             }
           }
         }
       } else {
         // No penalty, look for ageCategory
-        const ageCatIdx = rest.findIndex(r => r.match(/代[男女]子$/));
+        const ageCatIdx = rest.findIndex((r) => r.match(/代[男女]子$/));
         if (ageCatIdx >= 0) {
           ageCategory = rest[ageCatIdx];
           const afterAgeCat = rest.slice(ageCatIdx + 1);
@@ -191,7 +200,7 @@ function parseResultLine(line: string, currentCategory: CategoryName): ParsedRes
             if (field.match(/km\/h$/)) {
               averageSpeed = parseFloat(field.replace("km/h", ""));
             } else if (field.match(/^\d+$/)) {
-              ageCategoryRank = parseInt(field);
+              ageCategoryRank = parseInt(field, 10);
             }
           }
         }
@@ -205,7 +214,7 @@ function parseResultLine(line: string, currentCategory: CategoryName): ParsedRes
       if (field.match(/代[男女]子$/)) {
         ageCategory = field;
       } else if (field.match(/^\d+$/) && !penaltyMinutes) {
-        penaltyMinutes = parseInt(field);
+        penaltyMinutes = parseInt(field, 10);
       }
     }
   }
@@ -234,15 +243,18 @@ function parseLaptimeLine(line: string): ParsedLaptime | null {
   if (!trimmed || trimmed.startsWith("No.") || trimmed === "---PAGE---") return null;
   if (trimmed.match(/^第\d+回/)) return null;
 
-  const parts = trimmed.split("\t").map(s => s.trim()).filter(s => s !== "");
+  const parts = trimmed
+    .split("\t")
+    .map((s) => s.trim())
+    .filter((s) => s !== "");
   if (parts.length < 4) return null;
 
-  const bibNumber = parseInt(parts[0]);
-  if (isNaN(bibNumber)) return null;
+  const bibNumber = parseInt(parts[0], 10);
+  if (Number.isNaN(bibNumber)) return null;
 
   const name = parts[1];
-  const lapCount = parseInt(parts[2]);
-  if (isNaN(lapCount)) return null;
+  const lapCount = parseInt(parts[2], 10);
+  if (Number.isNaN(lapCount)) return null;
 
   const totalTime = parts[3];
 
@@ -255,8 +267,8 @@ function parseLaptimeLine(line: string): ParsedLaptime | null {
   let lapStartIdx: number;
 
   // Check if parts[4] is a small number (penalty) or a time
-  if (parts[4] && parts[4].match(/^\d+$/) && parseInt(parts[4]) < 100) {
-    penaltyMinutes = parseInt(parts[4]);
+  if (parts[4]?.match(/^\d+$/) && parseInt(parts[4], 10) < 100) {
+    penaltyMinutes = parseInt(parts[4], 10);
     finalTime = parts[5] || totalTime;
     lapStartIdx = 6;
   } else {
@@ -272,7 +284,7 @@ function parseLaptimeLine(line: string): ParsedLaptime | null {
     finalTime = totalTime;
   }
 
-  const laps = parts.slice(lapStartIdx).filter(s => s.match(/^\d+:\d{2}:\d{2}$/));
+  const laps = parts.slice(lapStartIdx).filter((s) => s.match(/^\d+:\d{2}:\d{2}$/));
 
   return {
     bibNumber,
@@ -329,9 +341,9 @@ function determineCategoryForBib(bib: number): CategoryName {
 
 function buildAthleteResults(
   results: ParsedResult[],
-  laptimeMap: Map<number, ParsedLaptime>
+  laptimeMap: Map<number, ParsedLaptime>,
 ): object[] {
-  return results.map(r => {
+  return results.map((r) => {
     const lt = laptimeMap.get(r.bibNumber);
     const lapTimes = lt
       ? lt.laps.map((time, i) => ({
@@ -360,7 +372,7 @@ function buildAthleteResults(
 }
 
 function buildLaptimes(laptimeData: ParsedLaptime[]): object[] {
-  return laptimeData.map(lt => ({
+  return laptimeData.map((lt) => ({
     bibNumber: lt.bibNumber,
     name: lt.name,
     category: determineCategoryForBib(lt.bibNumber),
@@ -395,9 +407,9 @@ async function main() {
   const results = parseResults(resultText);
   console.log(`Parsed ${results.length} result entries.`);
 
-  const cat200 = results.filter(r => r.category === "200km");
-  const cat100 = results.filter(r => r.category === "100km");
-  const cat50 = results.filter(r => r.category === "50km");
+  const cat200 = results.filter((r) => r.category === "200km");
+  const cat100 = results.filter((r) => r.category === "100km");
+  const cat50 = results.filter((r) => r.category === "50km");
   console.log(`  200km: ${cat200.length}, 100km: ${cat100.length}, 50km: ${cat50.length}`);
 
   console.log("Parsing laptimes...");
@@ -440,22 +452,10 @@ async function main() {
   const comments = {};
 
   // Write all JSON files
-  fs.writeFileSync(
-    path.join(DATA_DIR, "race.json"),
-    JSON.stringify(raceMetadata, null, 2)
-  );
-  fs.writeFileSync(
-    path.join(DATA_DIR, "results.json"),
-    JSON.stringify(athleteResults, null, 2)
-  );
-  fs.writeFileSync(
-    path.join(DATA_DIR, "laptimes.json"),
-    JSON.stringify(athleteLaptimes, null, 2)
-  );
-  fs.writeFileSync(
-    path.join(DATA_DIR, "comments.json"),
-    JSON.stringify(comments, null, 2)
-  );
+  fs.writeFileSync(path.join(DATA_DIR, "race.json"), JSON.stringify(raceMetadata, null, 2));
+  fs.writeFileSync(path.join(DATA_DIR, "results.json"), JSON.stringify(athleteResults, null, 2));
+  fs.writeFileSync(path.join(DATA_DIR, "laptimes.json"), JSON.stringify(athleteLaptimes, null, 2));
+  fs.writeFileSync(path.join(DATA_DIR, "comments.json"), JSON.stringify(comments, null, 2));
 
   console.log("\nJSON files created:");
   console.log(`  race.json`);
@@ -468,27 +468,29 @@ async function main() {
 
   // Check categories
   for (const cat of ["200km", "100km", "50km"] as const) {
-    const catResults = results.filter(r => r.category === cat);
-    const finished = catResults.filter(r => r.status === "finished");
-    const open = catResults.filter(r => r.status === "OPEN");
-    const dnf = catResults.filter(r => r.status === "DNF");
-    const dns = catResults.filter(r => r.status === "DNS");
+    const catResults = results.filter((r) => r.category === cat);
+    const finished = catResults.filter((r) => r.status === "finished");
+    const open = catResults.filter((r) => r.status === "OPEN");
+    const dnf = catResults.filter((r) => r.status === "DNF");
+    const dns = catResults.filter((r) => r.status === "DNS");
     console.log(
-      `${cat}: total=${catResults.length} finished=${finished.length} OPEN=${open.length} DNF=${dnf.length} DNS=${dns.length}`
+      `${cat}: total=${catResults.length} finished=${finished.length} OPEN=${open.length} DNF=${dnf.length} DNS=${dns.length}`,
     );
   }
 
   // Check bib consistency between results and laptimes
-  const resultBibs = new Set(results.map(r => r.bibNumber));
-  const laptimeBibs = new Set(laptimes.map(l => l.bibNumber));
-  const inResultNotLaptime = [...resultBibs].filter(b => !laptimeBibs.has(b));
-  const inLaptimeNotResult = [...laptimeBibs].filter(b => !resultBibs.has(b));
+  const resultBibs = new Set(results.map((r) => r.bibNumber));
+  const laptimeBibs = new Set(laptimes.map((l) => l.bibNumber));
+  const inResultNotLaptime = [...resultBibs].filter((b) => !laptimeBibs.has(b));
+  const inLaptimeNotResult = [...laptimeBibs].filter((b) => !resultBibs.has(b));
 
   if (inResultNotLaptime.length > 0) {
-    console.log(`Bibs in results but not in laptimes (${inResultNotLaptime.length}): DNS entries expected`);
+    console.log(
+      `Bibs in results but not in laptimes (${inResultNotLaptime.length}): DNS entries expected`,
+    );
     // Check if they're all DNS
-    const nonDns = inResultNotLaptime.filter(b => {
-      const r = results.find(r => r.bibNumber === b);
+    const nonDns = inResultNotLaptime.filter((b) => {
+      const r = results.find((r) => r.bibNumber === b);
       return r && r.status !== "DNS";
     });
     if (nonDns.length > 0) {
@@ -505,11 +507,11 @@ async function main() {
     const expectedLaps = cat === "200km" ? 35 : cat === "100km" ? 18 : 9;
     if (lt.laps.length !== expectedLaps && lt.laps.length !== lt.lapCount) {
       // Only warn if it's not a DNF (fewer laps expected)
-      const result = results.find(r => r.bibNumber === lt.bibNumber);
+      const result = results.find((r) => r.bibNumber === lt.bibNumber);
       if (result && result.status === "finished") {
         if (lt.laps.length !== expectedLaps) {
           console.log(
-            `WARNING: Bib ${lt.bibNumber} (${cat}) has ${lt.laps.length} laps, expected ${expectedLaps}`
+            `WARNING: Bib ${lt.bibNumber} (${cat}) has ${lt.laps.length} laps, expected ${expectedLaps}`,
           );
         }
       }

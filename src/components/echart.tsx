@@ -1,32 +1,32 @@
 "use client";
 
-import ReactEChartsCore from "echarts-for-react/lib/core";
-import * as echarts from "echarts/core";
+import type { EChartsOption } from "echarts";
 import {
   BarChart,
-  LineChart,
-  PieChart,
-  ScatterChart,
-  RadarChart,
-  HeatmapChart,
   BoxplotChart,
   GaugeChart,
+  HeatmapChart,
+  LineChart,
+  PieChart,
+  RadarChart,
+  ScatterChart,
 } from "echarts/charts";
 import {
-  GridComponent,
-  TooltipComponent,
-  TitleComponent,
-  LegendComponent,
   DataZoomComponent,
-  ToolboxComponent,
-  VisualMapComponent,
+  GridComponent,
+  LegendComponent,
+  MarkAreaComponent,
   MarkLineComponent,
   MarkPointComponent,
-  MarkAreaComponent,
+  TitleComponent,
+  ToolboxComponent,
+  TooltipComponent,
+  VisualMapComponent,
 } from "echarts/components";
+import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
+import ReactEChartsCore from "echarts-for-react/lib/core";
 import { useTheme } from "next-themes";
-import type { EChartsOption } from "echarts";
 import { useMemo } from "react";
 
 echarts.use([
@@ -116,8 +116,8 @@ export function EChart({
   );
 }
 
-export { echarts };
 export type { EChartsOption };
+export { echarts };
 
 // Shared color palette
 export const COLORS = {

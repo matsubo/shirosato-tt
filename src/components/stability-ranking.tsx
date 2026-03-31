@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import Link from "next/link";
+import { useMemo } from "react";
+import type { CategoryFilter } from "@/components/category-filter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -10,38 +12,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds, lapTimeToMinutes, formatTime } from "@/lib/time-utils";
 import { calcCV, calcDeviation, mean } from "@/lib/stats";
-import type { CategoryFilter } from "@/components/category-filter";
+import { formatTime, lapTimeToMinutes, timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 interface PerformanceRankingProps {
   category: CategoryFilter;
 }
 
-function computeForCategory(
-  allData: AthleteResult[],
-  cat: "200km" | "100km" | "50km"
-) {
+function computeForCategory(allData: AthleteResult[], cat: "200km" | "100km" | "50km") {
   const catFinished = allData.filter(
     (r) =>
       r.category === cat &&
       (r.status === "finished" || r.status === "OPEN") &&
       r.lapTimes &&
       r.lapTimes.length > 1 &&
-      r.totalTime
+      r.totalTime,
   );
   if (catFinished.length === 0) return [];
 
-  const totalTimes = catFinished.map((r) => timeToSeconds(r.totalTime!));
-  const laps = catFinished.length;
+  const _totalTimes = catFinished.map((r) => timeToSeconds(r.totalTime!));
+  const _laps = catFinished.length;
 
   const catData = catFinished.map((r) => {
-    const lapMins = r.lapTimes.map((l: { time: string }) =>
-      lapTimeToMinutes(l.time)
-    );
+    const lapMins = r.lapTimes.map((l: { time: string }) => lapTimeToMinutes(l.time));
     const cv = calcCV(lapMins);
     const totalSec = timeToSeconds(r.totalTime!);
 
@@ -74,14 +69,10 @@ function computeForCategory(
     // 安定性偏差値 (CVが低いほど良い → 反転)
     const stabilityScore = calcDeviation(d.cv, allCV);
     // 後半維持偏差値 (1.0からの乖離が小さいほど良い → 反転)
-    const retentionScore = calcDeviation(
-      Math.abs(1 - d.retentionRatio),
-      allRetention
-    );
+    const retentionScore = calcDeviation(Math.abs(1 - d.retentionRatio), allRetention);
 
     // 総合スコア: タイム50% + 安定性25% + 後半維持25%
-    const overallScore =
-      timeScore * 0.5 + stabilityScore * 0.25 + retentionScore * 0.25;
+    const overallScore = timeScore * 0.5 + stabilityScore * 0.25 + retentionScore * 0.25;
 
     return {
       ...d,
@@ -100,7 +91,7 @@ export function StabilityRanking({ category }: PerformanceRankingProps) {
     const all = computeForCategory(allData, category);
     all.sort((a, b) => b.overallScore - a.overallScore);
     return all.slice(0, 10);
-  }, [allData, category]);
+  }, [category]);
 
   return (
     <Card>
@@ -109,8 +100,7 @@ export function StabilityRanking({ category }: PerformanceRankingProps) {
       </CardHeader>
       <CardContent>
         <p className="mb-3 text-xs text-muted-foreground">
-          タイム(50%) + ラップ安定性(25%) + 後半維持率(25%)
-          の加重スコアでカテゴリ内評価
+          タイム(50%) + ラップ安定性(25%) + 後半維持率(25%) の加重スコアでカテゴリ内評価
         </p>
         <Table>
           <TableHeader>
@@ -131,11 +121,7 @@ export function StabilityRanking({ category }: PerformanceRankingProps) {
                   {i < 3 ? (
                     <span
                       className={
-                        i === 0
-                          ? "text-yellow-400"
-                          : i === 1
-                            ? "text-gray-300"
-                            : "text-orange-400"
+                        i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-300" : "text-orange-400"
                       }
                     >
                       {i + 1}
@@ -164,9 +150,7 @@ export function StabilityRanking({ category }: PerformanceRankingProps) {
                 <TableCell className="text-right tabular-nums text-xs">
                   {r.retentionScore.toFixed(1)}
                 </TableCell>
-                <TableCell className="tabular-nums text-xs">
-                  {formatTime(r.totalTime)}
-                </TableCell>
+                <TableCell className="tabular-nums text-xs">{formatTime(r.totalTime)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

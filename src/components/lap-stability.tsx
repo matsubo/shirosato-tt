@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, COLORS } from "@/components/echart";
 import type { EChartsOption } from "@/components/echart";
+import { COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { calcCV, mean, stddev } from "@/lib/stats";
+import { secondsToTime, timeToSeconds } from "@/lib/time-utils";
 import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds, secondsToTime } from "@/lib/time-utils";
-import { mean, stddev, calcCV } from "@/lib/stats";
 
 interface LapStabilityProps {
   athlete: AthleteResult;
@@ -83,7 +83,7 @@ export function LapStability({ athlete }: LapStabilityProps) {
                 y2: d.faster ? 0 : 1,
                 colorStops: [
                   { offset: 0, color: d.faster ? COLORS.green : COLORS.red },
-                  { offset: 1, color: d.faster ? COLORS.green + "44" : COLORS.red + "44" },
+                  { offset: 1, color: d.faster ? `${COLORS.green}44` : `${COLORS.red}44` },
                 ],
               },
               borderRadius: d.faster ? [0, 0, 4, 4] : [4, 4, 0, 0],
@@ -99,7 +99,7 @@ export function LapStability({ athlete }: LapStabilityProps) {
         },
       ],
     }),
-    [data, theme]
+    [data, theme],
   );
 
   return (
@@ -111,21 +111,15 @@ export function LapStability({ athlete }: LapStabilityProps) {
         <div className="mb-4 grid grid-cols-3 gap-4 text-sm">
           <div>
             <p className="text-xs text-muted-foreground">平均ラップ</p>
-            <p className="text-lg font-semibold tabular-nums">
-              {secondsToTime(Math.round(avg))}
-            </p>
+            <p className="text-lg font-semibold tabular-nums">{secondsToTime(Math.round(avg))}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">標準偏差</p>
-            <p className="text-lg font-semibold tabular-nums">
-              {sd.toFixed(1)}s
-            </p>
+            <p className="text-lg font-semibold tabular-nums">{sd.toFixed(1)}s</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">CV (変動係数)</p>
-            <p className="text-lg font-semibold tabular-nums">
-              {cv.toFixed(2)}%
-            </p>
+            <p className="text-lg font-semibold tabular-nums">{cv.toFixed(2)}%</p>
           </div>
         </div>
 

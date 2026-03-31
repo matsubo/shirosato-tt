@@ -13,7 +13,12 @@
       "mcp__coolify__github_apps",
       "mcp__coolify__application",
       "mcp__coolify__deploy",
-      "mcp__coolify__deployment"
+      "mcp__coolify__deployment",
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "mcp__plugin_playwright_playwright__browser_run_code",
+      "mcp__coolify__env_vars",
+      "mcp__coolify__get_application"
     ]
   }
 }

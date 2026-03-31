@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { timeToSeconds, secondsToTime, formatTime, lapTimeToMinutes } from "@/lib/time-utils";
+import { describe, expect, it } from "vitest";
+import { formatTime, lapTimeToMinutes, secondsToTime, timeToSeconds } from "@/lib/time-utils";
 
 describe("timeToSeconds", () => {
   it("converts HH:MM:SS to seconds", () => {

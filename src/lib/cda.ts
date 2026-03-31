@@ -50,7 +50,7 @@ export function calcCdAFromLapTime(
   lapTimeSeconds: number,
   distanceMeters: number,
   power: number,
-  options?: Omit<CdAParams, "power" | "speed">
+  options?: Omit<CdAParams, "power" | "speed">,
 ): number {
   if (lapTimeSeconds === 0) return 0;
   const speed = distanceMeters / lapTimeSeconds;

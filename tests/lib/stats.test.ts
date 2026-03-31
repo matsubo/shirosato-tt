@@ -1,5 +1,12 @@
-import { describe, it, expect } from "vitest";
-import { mean, stddev, calcDeviation, calcCV, calcPercentile, calcMovingAverage } from "@/lib/stats";
+import { describe, expect, it } from "vitest";
+import {
+  calcCV,
+  calcDeviation,
+  calcMovingAverage,
+  calcPercentile,
+  mean,
+  stddev,
+} from "@/lib/stats";
 
 describe("mean", () => {
   it("calculates the mean of numbers", () => {

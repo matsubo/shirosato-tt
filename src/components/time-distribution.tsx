@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme, CATEGORY_COLORS } from "@/components/echart";
-import type { EChartsOption } from "@/components/echart";
-import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
+import type { EChartsOption } from "@/components/echart";
+import { CATEGORY_COLORS, EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import results from "@/data/results.json";
+import { timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const CATEGORY_CONFIG: Record<
   string,
@@ -23,7 +23,7 @@ function buildBins(category: string, data: AthleteResult[]) {
   if (!config) return [];
 
   const finished = data.filter(
-    (r) => r.category === category && r.status === "finished" && r.totalTime
+    (r) => r.category === category && r.status === "finished" && r.totalTime,
   );
   const times = finished.map((r) => timeToSeconds(r.totalTime!) / 60);
 
@@ -45,15 +45,14 @@ function buildBins(category: string, data: AthleteResult[]) {
 
   return bins.filter(
     (_, i, arr) =>
-      arr.slice(0, i + 1).some((b) => b.count > 0) &&
-      arr.slice(i).some((b) => b.count > 0)
+      arr.slice(0, i + 1).some((b) => b.count > 0) && arr.slice(i).some((b) => b.count > 0),
   );
 }
 
 function CategoryChart({ category }: { category: string }) {
   const data = useMemo(
     () => buildBins(category, results as unknown as AthleteResult[]),
-    [category]
+    [category],
   );
   const config = CATEGORY_CONFIG[category];
   const theme = useChartTheme();
@@ -112,7 +111,7 @@ function CategoryChart({ category }: { category: string }) {
               y2: 1,
               colorStops: [
                 { offset: 0, color: config.color },
-                { offset: 1, color: config.color + "66" },
+                { offset: 1, color: `${config.color}66` },
               ],
             },
             borderRadius: [4, 4, 0, 0],
@@ -123,15 +122,14 @@ function CategoryChart({ category }: { category: string }) {
             fontSize: 11,
             color: theme.subTextColor,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter: (params: any) =>
-              params.value > 0 ? String(params.value) : "",
+            formatter: (params: any) => (params.value > 0 ? String(params.value) : ""),
           },
           animationDuration: 600,
           animationEasing: "elasticOut",
         },
       ],
     }),
-    [data, config.color, theme]
+    [data, config.color, theme],
   );
 
   return <EChart option={option} style={{ width: "100%", height: "300px" }} />;

@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -83,8 +83,7 @@ function analyseLaps(laps: LapEntry[]): Omit<LapStats, "rank" | "category"> {
   const firstHalf = lapSeconds.slice(0, half);
   const secondHalf = lapSeconds.slice(half);
   const firstHalfMean = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
-  const secondHalfMean =
-    secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+  const secondHalfMean = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
   const splitDiff = secondHalfMean - firstHalfMean;
 
   const lastThree = lapSeconds.slice(-3);
@@ -114,7 +113,7 @@ function analyseLaps(laps: LapEntry[]): Omit<LapStats, "rank" | "category"> {
 // Returns true if athlete is in the top ~10% of their category by rank
 function isTopPerformer(rank: string | number): boolean {
   const n = typeof rank === "number" ? rank : parseInt(rank, 10);
-  return !isNaN(n) && n <= 10;
+  return !Number.isNaN(n) && n <= 10;
 }
 
 function generateComment(stats: LapStats): string {
@@ -131,7 +130,6 @@ function generateComment(stats: LapStats): string {
     rank,
     firstHalfMean,
     secondHalfMean,
-    lapSeconds,
   } = stats;
 
   const bestTimeStr = formatSeconds(bestTime);
@@ -227,11 +225,9 @@ function pickFrom(templates: string[]): string {
 // ---------------------------------------------------------------------------
 function main() {
   const basePath = join(__dirname, "..", "src", "data");
-  const results: ResultEntry[] = JSON.parse(
-    readFileSync(join(basePath, "results.json"), "utf-8")
-  );
+  const results: ResultEntry[] = JSON.parse(readFileSync(join(basePath, "results.json"), "utf-8"));
   const laptimes: LaptimeEntry[] = JSON.parse(
-    readFileSync(join(basePath, "laptimes.json"), "utf-8")
+    readFileSync(join(basePath, "laptimes.json"), "utf-8"),
   );
 
   const laptimeMap = new Map<number, LaptimeEntry>();
@@ -239,9 +235,7 @@ function main() {
     laptimeMap.set(lt.bibNumber, lt);
   }
 
-  const finished = results.filter(
-    (r) => r.status !== "DNF" && r.status !== "DNS"
-  );
+  const finished = results.filter((r) => r.status !== "DNF" && r.status !== "DNS");
 
   const comments: Record<string, string> = {};
   let generated = 0;
@@ -263,13 +257,15 @@ function main() {
   }
 
   const outputPath = join(basePath, "comments.json");
-  writeFileSync(outputPath, JSON.stringify(comments, null, 2) + "\n", "utf-8");
+  writeFileSync(outputPath, `${JSON.stringify(comments, null, 2)}\n`, "utf-8");
 
   console.log(`Generated ${generated} comments for finished athletes.`);
   console.log(`Written to ${outputPath}`);
 
   // Validation
-  const finishedWithLaps = finished.filter((r) => laptimeMap.has(r.bibNumber) && laptimeMap.get(r.bibNumber)!.laps.length > 0);
+  const finishedWithLaps = finished.filter(
+    (r) => laptimeMap.has(r.bibNumber) && (laptimeMap.get(r.bibNumber)?.laps.length ?? 0) > 0,
+  );
   if (generated !== finishedWithLaps.length) {
     console.error(`WARNING: Expected ${finishedWithLaps.length} but generated ${generated}`);
     process.exit(1);

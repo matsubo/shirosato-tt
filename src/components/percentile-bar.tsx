@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds } from "@/lib/time-utils";
 import { calcPercentile } from "@/lib/stats";
+import { timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 interface PercentileBarProps {
   athlete: AthleteResult;
@@ -22,13 +22,7 @@ function getPercentileTextColor(percentile: number): string {
   return "text-red-400";
 }
 
-function ProgressBar({
-  label,
-  percentile,
-}: {
-  label: string;
-  percentile: number;
-}) {
+function ProgressBar({ label, percentile }: { label: string; percentile: number }) {
   const topPercent = (100 - percentile).toFixed(1);
   return (
     <div>
@@ -48,25 +42,18 @@ function ProgressBar({
   );
 }
 
-export function PercentileBar({
-  athlete,
-  categoryAthletes,
-}: PercentileBarProps) {
+export function PercentileBar({ athlete, categoryAthletes }: PercentileBarProps) {
   if (!athlete.totalTime) return null;
 
   const athleteTime = timeToSeconds(athlete.totalTime);
 
   const finishedCategory = categoryAthletes.filter(
-    (a) => (a.status === "finished" || a.status === "OPEN") && a.totalTime
+    (a) => (a.status === "finished" || a.status === "OPEN") && a.totalTime,
   );
-  const categoryTimes = finishedCategory.map((a) =>
-    timeToSeconds(a.totalTime!)
-  );
+  const categoryTimes = finishedCategory.map((a) => timeToSeconds(a.totalTime!));
   const categoryPercentile = calcPercentile(athleteTime, categoryTimes);
 
-  const genderAthletes = finishedCategory.filter(
-    (a) => a.gender === athlete.gender
-  );
+  const genderAthletes = finishedCategory.filter((a) => a.gender === athlete.gender);
   const genderTimes = genderAthletes.map((a) => timeToSeconds(a.totalTime!));
   const genderPercentile = calcPercentile(athleteTime, genderTimes);
 
@@ -76,10 +63,7 @@ export function PercentileBar({
         <CardTitle>パーセンタイル順位</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <ProgressBar
-          label={`カテゴリ内 (${athlete.category})`}
-          percentile={categoryPercentile}
-        />
+        <ProgressBar label={`カテゴリ内 (${athlete.category})`} percentile={categoryPercentile} />
         <ProgressBar
           label={`${athlete.gender === "男" ? "男子" : "女子"}内`}
           percentile={genderPercentile}

@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart } from "@/components/echart";
-import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
+import { EChart } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import results from "@/data/results.json";
+import { timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const CATEGORY_META: Record<string, { color: string; laps: number }> = {
   "200km": { color: "#22d3ee", laps: 35 },
@@ -31,7 +31,7 @@ export function RankProgression({ category }: RankProgressionProps) {
         r.category === category &&
         (r.status === "finished" || r.status === "OPEN") &&
         r.lapTimes &&
-        r.lapTimes.length >= meta.laps
+        r.lapTimes.length >= meta.laps,
     );
 
     if (finished.length === 0) return null;
@@ -52,9 +52,7 @@ export function RankProgression({ category }: RankProgressionProps) {
 
     // For each lap, determine rank of each athlete
     // ranks[athleteIdx][lapIdx] = rank (1-based)
-    const ranks: number[][] = finished.map(() =>
-      new Array(meta.laps).fill(0)
-    );
+    const ranks: number[][] = finished.map(() => new Array(meta.laps).fill(0));
 
     for (let lap = 0; lap < meta.laps; lap++) {
       // Create array of [athleteIdx, cumulativeTime]
@@ -77,8 +75,16 @@ export function RankProgression({ category }: RankProgressionProps) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const series: any[] = [];
     const top10Colors = [
-      "#fbbf24", "#94a3b8", "#f97316", "#22d3ee", "#4ade80",
-      "#a78bfa", "#f472b6", "#38bdf8", "#fb923c", "#6ee7b7",
+      "#fbbf24",
+      "#94a3b8",
+      "#f97316",
+      "#22d3ee",
+      "#4ade80",
+      "#a78bfa",
+      "#f472b6",
+      "#38bdf8",
+      "#fb923c",
+      "#6ee7b7",
     ];
 
     finalRankOrder
@@ -115,12 +121,11 @@ export function RankProgression({ category }: RankProgressionProps) {
           if (!Array.isArray(params)) return "";
           const lap = params[0]?.dataIndex + 1;
           const sorted = [...params].sort(
-            (a: { data: number }, b: { data: number }) => a.data - b.data
+            (a: { data: number }, b: { data: number }) => a.data - b.data,
           );
           const top5 = sorted.slice(0, 5);
           const lines = top5.map(
-            (p: { data: number; seriesName: string }) =>
-              `${p.data}位 ${p.seriesName}`
+            (p: { data: number; seriesName: string }) => `${p.data}位 ${p.seriesName}`,
           );
           return `<strong>Lap ${lap}</strong><br/>${lines.join("<br/>")}`;
         },
@@ -153,14 +158,11 @@ export function RankProgression({ category }: RankProgressionProps) {
       },
       dataZoom:
         meta.laps > 15
-          ? [
-              { type: "inside" as const },
-              { type: "slider" as const, height: 20, bottom: 35 },
-            ]
+          ? [{ type: "inside" as const }, { type: "slider" as const, height: 20, bottom: 35 }]
           : [{ type: "inside" as const }],
       series,
     };
-  }, [allData, category]);
+  }, [category]);
 
   if (!option) return null;
 

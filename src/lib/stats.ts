@@ -25,7 +25,7 @@ export function calcDeviation(value: number, values: number[]): number {
   const sd = stddev(values);
   if (sd === 0) return 50;
   const avg = mean(values);
-  return 50 + 10 * (avg - value) / sd;
+  return 50 + (10 * (avg - value)) / sd;
 }
 
 /**

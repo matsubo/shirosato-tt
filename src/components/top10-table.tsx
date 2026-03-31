@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import Link from "next/link";
+import { useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -10,11 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import results from "@/data/results.json";
 import race from "@/data/race.json";
-import type { AthleteResult, RaceMetadata } from "@/lib/types";
-import { timeToSeconds, formatTime } from "@/lib/time-utils";
+import results from "@/data/results.json";
 import { calcDeviation } from "@/lib/stats";
+import { formatTime, timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult, RaceMetadata } from "@/lib/types";
 
 const RANK_COLORS: Record<number, string> = {
   1: "#fbbf24",
@@ -30,13 +30,13 @@ export function Top10TableContent({ category }: Top10TableContentProps) {
   const data = results as unknown as AthleteResult[];
   const raceData = race as unknown as RaceMetadata;
 
-  const { top10, deviations } = useMemo(() => {
+  const { top10 } = useMemo(() => {
     const finished = data.filter(
       (r) =>
         r.category === category &&
         r.status === "finished" &&
         typeof r.rank === "number" &&
-        r.totalTime
+        r.totalTime,
     );
     finished.sort((a, b) => (a.rank as number) - (b.rank as number));
 
@@ -57,7 +57,7 @@ export function Top10TableContent({ category }: Top10TableContentProps) {
     });
 
     return { top10: top, deviations: allTimes };
-  }, [category, data, raceData]);
+  }, [category]);
 
   return (
     <Table>
@@ -77,10 +77,7 @@ export function Top10TableContent({ category }: Top10TableContentProps) {
           const rankColor = RANK_COLORS[rank];
           return (
             <TableRow key={r.no}>
-              <TableCell
-                className="font-bold"
-                style={rankColor ? { color: rankColor } : undefined}
-              >
+              <TableCell className="font-bold" style={rankColor ? { color: rankColor } : undefined}>
                 {rank}
               </TableCell>
               <TableCell>{r.no}</TableCell>
@@ -92,15 +89,9 @@ export function Top10TableContent({ category }: Top10TableContentProps) {
                   {r.name}
                 </Link>
               </TableCell>
-              <TableCell className="tabular-nums">
-                {formatTime(r.totalTime!)}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {r.avgSpeed} km/h
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {r.deviation}
-              </TableCell>
+              <TableCell className="tabular-nums">{formatTime(r.totalTime!)}</TableCell>
+              <TableCell className="text-right tabular-nums">{r.avgSpeed} km/h</TableCell>
+              <TableCell className="text-right tabular-nums">{r.deviation}</TableCell>
             </TableRow>
           );
         })}

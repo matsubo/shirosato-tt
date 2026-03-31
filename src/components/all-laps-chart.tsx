@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart } from "@/components/echart";
-import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
+import { EChart } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import results from "@/data/results.json";
+import { timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const CATEGORY_META: Record<string, { color: string; laps: number }> = {
   "200km": { color: "#22d3ee", laps: 35 },
@@ -30,7 +30,7 @@ export function AllLapsChart({ category }: AllLapsChartProps) {
         r.category === category &&
         (r.status === "finished" || r.status === "OPEN") &&
         r.lapTimes &&
-        r.lapTimes.length >= meta.laps
+        r.lapTimes.length >= meta.laps,
     );
 
     // Sort by total time for visual layering (slowest first = drawn first)
@@ -151,12 +151,13 @@ export function AllLapsChart({ category }: AllLapsChartProps) {
         name: "分",
         axisLabel: { fontSize: 10 },
       },
-      dataZoom: meta.laps > 15
-        ? [{ type: "inside" as const }, { type: "slider" as const, height: 20, bottom: 35 }]
-        : [{ type: "inside" as const }],
+      dataZoom:
+        meta.laps > 15
+          ? [{ type: "inside" as const }, { type: "slider" as const, height: 20, bottom: 35 }]
+          : [{ type: "inside" as const }],
       series,
     };
-  }, [allData, category]);
+  }, [category]);
 
   if (!option) return null;
 

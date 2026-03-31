@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EChart, useChartTheme } from "@/components/echart";
-import type { EChartsOption } from "@/components/echart";
-import results from "@/data/results.json";
-import type { AthleteResult } from "@/lib/types";
-import { timeToSeconds, secondsToTime } from "@/lib/time-utils";
 import type { CategoryFilter } from "@/components/category-filter";
+import type { EChartsOption } from "@/components/echart";
+import { EChart, useChartTheme } from "@/components/echart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import results from "@/data/results.json";
+import { secondsToTime, timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult } from "@/lib/types";
 
 const AGE_DECADES = ["10代", "20代", "30代", "40代", "50代", "60代"];
 
@@ -50,7 +50,7 @@ export function TimeBoxplot({ category }: TimeBoxplotProps) {
         r.category === category &&
         (r.status === "finished" || r.status === "OPEN") &&
         r.totalTime &&
-        r.ageCategory
+        r.ageCategory,
     );
 
     const MALE_COLOR = "#22d3ee";
@@ -69,7 +69,7 @@ export function TimeBoxplot({ category }: TimeBoxplotProps) {
 
       // Male
       const males = catData.filter(
-        (r) => r.gender === "男" && extractDecade(r.ageCategory) === decade
+        (r) => r.gender === "男" && extractDecade(r.ageCategory) === decade,
       );
       const maleTimes = males.map((r) => timeToSeconds(r.totalTime!) / 60);
       const maleBox = calcBoxplot(maleTimes);
@@ -85,7 +85,7 @@ export function TimeBoxplot({ category }: TimeBoxplotProps) {
 
       // Female
       const females = catData.filter(
-        (r) => r.gender === "女" && extractDecade(r.ageCategory) === decade
+        (r) => r.gender === "女" && extractDecade(r.ageCategory) === decade,
       );
       const femaleTimes = females.map((r) => timeToSeconds(r.totalTime!) / 60);
       const femaleBox = calcBoxplot(femaleTimes);
@@ -111,7 +111,11 @@ export function TimeBoxplot({ category }: TimeBoxplotProps) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formatter: (params: any) => {
           if (params.componentType === "series") {
-            if (params.seriesType === "boxplot" && Array.isArray(params.value) && params.value.length === 5) {
+            if (
+              params.seriesType === "boxplot" &&
+              Array.isArray(params.value) &&
+              params.value.length === 5
+            ) {
               const [lower, q1, median, q3, upper] = params.value;
               const gender = params.seriesName;
               return `<div style="font-weight:600">${AGE_DECADES[params.dataIndex]} ${gender}</div>

@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 const DATA_DIR = path.join(__dirname, "../src/data");
 
@@ -44,10 +44,7 @@ function isHeaderLine(line: string): boolean {
   );
 }
 
-function parseResultLine(
-  line: string,
-  currentCategory: CategoryName
-): ParsedResult | null {
+function parseResultLine(line: string, currentCategory: CategoryName): ParsedResult | null {
   const trimmed = line.trim();
   if (!trimmed || isHeaderLine(trimmed)) return null;
 
@@ -73,17 +70,17 @@ function parseResultLine(
     rank = "DNS";
     status = "DNS";
   } else {
-    rank = parseInt(rankStr);
-    if (isNaN(rank)) return null;
+    rank = parseInt(rankStr, 10);
+    if (Number.isNaN(rank)) return null;
     status = "finished";
   }
 
-  const bibNumber = parseInt(parts[1]);
-  if (isNaN(bibNumber)) return null;
+  const bibNumber = parseInt(parts[1], 10);
+  if (Number.isNaN(bibNumber)) return null;
 
   const name = parts[2];
-  const age = parseInt(parts[3]);
-  if (isNaN(age)) return null;
+  const age = parseInt(parts[3], 10);
+  if (Number.isNaN(age)) return null;
 
   const gender = parts[4] as "男" | "女";
   if (gender !== "男" && gender !== "女") return null;
@@ -100,9 +97,7 @@ function parseResultLine(
   if (remaining.length === 0) return null;
 
   // First remaining should be totalTime
-  const totalTime = remaining[0]?.match(/^\d+:\d{2}:\d{2}$/)
-    ? remaining[0]
-    : null;
+  const totalTime = remaining[0]?.match(/^\d+:\d{2}:\d{2}$/) ? remaining[0] : null;
 
   // OPEN entries without totalTime (e.g., participated but no recorded time)
   if (!totalTime && status === "OPEN") {
@@ -123,7 +118,7 @@ function parseResultLine(
   const numsBefore = rest
     .slice(0, ageCatIdx)
     .filter((r) => /^\d+$/.test(r))
-    .map((r) => parseInt(r));
+    .map((r) => parseInt(r, 10));
 
   let penalty: number | null = null;
   let maleRank: number | null = null;
@@ -162,7 +157,7 @@ function parseResultLine(
     if (field.endsWith("km/h")) {
       avgSpeed = parseFloat(field.replace("km/h", ""));
     } else if (/^\d+$/.test(field)) {
-      categoryRank = parseInt(field);
+      categoryRank = parseInt(field, 10);
     }
   }
 
@@ -193,7 +188,7 @@ function parseDnfDnsLine(
   age: number,
   gender: "男" | "女",
   category: CategoryName,
-  status: Status
+  status: Status,
 ): ParsedResult {
   // DNF/DNS format: rank, bib, name, age, gender, prefecture, [penalty], ageCategory
   // But sometimes prefecture is missing and ageCategory comes right after gender
@@ -207,7 +202,7 @@ function parseDnfDnsLine(
     if (/^\d+代[男女]子$/.test(field)) {
       ageCategory = field;
     } else if (/^\d+$/.test(field) && penalty === null) {
-      penalty = parseInt(field);
+      penalty = parseInt(field, 10);
     } else if (!ageCategory && !/^\d+$/.test(field)) {
       // First non-number, non-ageCategory field is prefecture
       if (!prefecture) {
@@ -269,10 +264,7 @@ interface ExistingResult {
 
 function main() {
   // Read raw text
-  const rawText = fs.readFileSync(
-    path.join(DATA_DIR, "raw-results.txt"),
-    "utf-8"
-  );
+  const rawText = fs.readFileSync(path.join(DATA_DIR, "raw-results.txt"), "utf-8");
 
   // Parse results from raw text
   const parsed = parseAllResults(rawText);
@@ -280,7 +272,7 @@ function main() {
 
   // Read existing results.json to get lapTimes
   const existingResults: ExistingResult[] = JSON.parse(
-    fs.readFileSync(path.join(DATA_DIR, "results.json"), "utf-8")
+    fs.readFileSync(path.join(DATA_DIR, "results.json"), "utf-8"),
   );
 
   // Build lookup map by bibNumber for lapTimes
@@ -317,7 +309,7 @@ function main() {
   let missingAgeCategory = 0;
 
   for (const r of finalResults) {
-    if (!r.age || isNaN(r.age)) missingAge++;
+    if (!r.age || Number.isNaN(r.age)) missingAge++;
     if (!r.prefecture) missingPrefecture++;
     if (!r.ageCategory) missingAgeCategory++;
   }
@@ -333,14 +325,12 @@ function main() {
     const dnf = catResults.filter((r) => r.status === "DNF");
     const dns = catResults.filter((r) => r.status === "DNS");
     console.log(
-      `${cat}: total=${catResults.length} finished=${finished.length} OPEN=${open.length} DNF=${dnf.length} DNS=${dns.length}`
+      `${cat}: total=${catResults.length} finished=${finished.length} OPEN=${open.length} DNF=${dnf.length} DNS=${dns.length}`,
     );
   }
 
   // Check that existing results count matches
-  console.log(
-    `\nExisting results.json: ${existingResults.length} entries`
-  );
+  console.log(`\nExisting results.json: ${existingResults.length} entries`);
   console.log(`New results: ${finalResults.length} entries`);
 
   if (existingResults.length !== finalResults.length) {
@@ -362,15 +352,12 @@ function main() {
       `  Bib ${s.bibNumber}: ${s.name}, age=${s.age}, pref=${s.prefecture}, ` +
         `ageCat=${s.ageCategory}, catRank=${s.categoryRank}, ` +
         `maleRank=${s.maleRank}, femaleRank=${s.femaleRank}, ` +
-        `penalty=${s.penalty}, avgSpeed=${s.avgSpeed}, lapTimes=${s.lapTimes.length}`
+        `penalty=${s.penalty}, avgSpeed=${s.avgSpeed}, lapTimes=${s.lapTimes.length}`,
     );
   }
 
   // Write results.json
-  fs.writeFileSync(
-    path.join(DATA_DIR, "results.json"),
-    JSON.stringify(finalResults, null, 2)
-  );
+  fs.writeFileSync(path.join(DATA_DIR, "results.json"), JSON.stringify(finalResults, null, 2));
   console.log("\nWrote results.json");
 }
 
