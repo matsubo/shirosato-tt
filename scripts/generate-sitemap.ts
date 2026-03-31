@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import results from "../src/data/results.json";
 
 const SITE_URL = "https://shirosato-tt-2026.teraren.com";
@@ -12,10 +12,10 @@ interface Result {
 const athletes = results as Result[];
 
 const urls = [
-  `  <url>\n    <loc>${SITE_URL}/</loc>\n    <lastmod>${TODAY}</lastmod>\n    <priority>1.0</priority>\n  </url>`,
+  `  <url>\n    <loc>${SITE_URL}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <priority>1.0</priority>\n  </url>`,
   ...athletes.map(
     (a) =>
-      `  <url>\n    <loc>${SITE_URL}/athletes/${a.no}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <priority>0.5</priority>\n  </url>`
+      `  <url>\n    <loc>${SITE_URL}/athletes/${a.no}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <priority>0.5</priority>\n  </url>`,
   ),
 ];
 

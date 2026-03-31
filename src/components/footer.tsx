@@ -44,12 +44,24 @@ export function Footer() {
           >
             CC BY-SA 4.0
           </a>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" className="inline-block ml-0.5" style={{ maxWidth: "1em", maxHeight: "1em" }} />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" className="inline-block ml-0.5" style={{ maxWidth: "1em", maxHeight: "1em" }} />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" className="inline-block ml-0.5" style={{ maxWidth: "1em", maxHeight: "1em" }} />
+          <img
+            src="/cc.svg"
+            alt="Creative Commons"
+            className="inline-block ml-0.5"
+            style={{ maxWidth: "1em", maxHeight: "1em" }}
+          />
+          <img
+            src="/by.svg"
+            alt="Attribution"
+            className="inline-block ml-0.5"
+            style={{ maxWidth: "1em", maxHeight: "1em" }}
+          />
+          <img
+            src="/sa.svg"
+            alt="Share Alike"
+            className="inline-block ml-0.5"
+            style={{ maxWidth: "1em", maxHeight: "1em" }}
+          />
         </p>
       </div>
     </footer>

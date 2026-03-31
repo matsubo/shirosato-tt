@@ -21,6 +21,7 @@ export function CategoryFilterBar({ value, onChange }: CategoryFilterBarProps) {
           const isActive = value === opt.value;
           return (
             <button
+              type="button"
               key={opt.value}
               onClick={() => onChange(opt.value)}
               className={`relative rounded-full px-5 py-1.5 text-sm font-semibold transition-all ${

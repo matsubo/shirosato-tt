@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import { StructuredData } from "@/components/structured-data";
 import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/gtm";
+import { Nav } from "@/components/nav";
+import { ThemeProvider } from "@/components/theme-provider";
+import race from "@/data/race.json";
+import results from "@/data/results.json";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,12 +27,12 @@ export const metadata: Metadata = {
     "第11回しろさとTT200（2026年3月22日・城里テストセンター）の全372選手のレース結果・ラップタイムをBIダッシュボードで徹底分析。200km/100km/50kmカテゴリ別の統計、偏差値、ペーシング、CdA推定など。",
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '32x32' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.svg", type: "image/svg+xml" },
     ],
-    apple: '/icon-192.png',
+    apple: "/icon-192.png",
   },
-  manifest: '/manifest.json',
+  manifest: "/manifest.json",
   alternates: {
     canonical: siteUrl,
   },
@@ -54,6 +55,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@ittriathlon",
+    creator: "@ittriathlon",
     title: "第11回しろさとTT200 TT Analytics",
     description:
       "第11回しろさとTT200の全372選手のリザルト・ラップタイムをBIダッシュボードで徹底分析。",
@@ -81,10 +84,44 @@ export default function RootLayout({
     >
       <head>
         <GoogleTagManager />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "SportsEvent",
+                name: race.raceName,
+                startDate: race.date,
+                endDate: race.date,
+                url: siteUrl,
+                eventStatus: "https://schema.org/EventCompletedStatusType",
+                location: {
+                  "@type": "Place",
+                  name: race.location,
+                  address: {
+                    "@type": "PostalAddress",
+                    addressRegion: "茨城県",
+                    addressCountry: "JP",
+                  },
+                },
+                numberOfParticipants: results.length,
+                sport: "Cycling Time Trial",
+                description:
+                  "第11回しろさとTT200（自転車タイムトライアル）の全選手リザルト・ラップタイムをBIダッシュボードで徹底分析。",
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "しろさとTT200 TT Analytics",
+                url: siteUrl,
+              },
+            ]),
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <GoogleTagManagerNoscript />
-        <StructuredData />
         <ThemeProvider>
           <Nav />
           {children}

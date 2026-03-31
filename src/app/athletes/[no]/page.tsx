@@ -1,22 +1,22 @@
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import results from "@/data/results.json";
-import race from "@/data/race.json";
-import comments from "@/data/comments.json";
-import type { AthleteResult, RaceMetadata } from "@/lib/types";
-import { AthleteProfile } from "@/components/athlete-profile";
-import { RadarChartComponent } from "@/components/radar-chart";
-import { PacingAnalysis } from "@/components/pacing-analysis";
-import { LapStability } from "@/components/lap-stability";
-import { PercentileBar } from "@/components/percentile-bar";
-import { CdACalculator } from "@/components/cda-calculator";
 import { AiComment } from "@/components/ai-comment";
-import { SingleLapChart } from "@/components/single-lap-chart";
-import { PacingWaterfall } from "@/components/pacing-waterfall";
+import { AthleteProfile } from "@/components/athlete-profile";
+import { CdACalculator } from "@/components/cda-calculator";
+import { LapStability } from "@/components/lap-stability";
 import { PaceScatter } from "@/components/pace-scatter";
-import { timeToSeconds } from "@/lib/time-utils";
+import { PacingAnalysis } from "@/components/pacing-analysis";
+import { PacingWaterfall } from "@/components/pacing-waterfall";
+import { PercentileBar } from "@/components/percentile-bar";
+import { RadarChartComponent } from "@/components/radar-chart";
+import { SingleLapChart } from "@/components/single-lap-chart";
+import comments from "@/data/comments.json";
+import race from "@/data/race.json";
+import results from "@/data/results.json";
 import { mean } from "@/lib/stats";
+import { timeToSeconds } from "@/lib/time-utils";
+import type { AthleteResult, RaceMetadata } from "@/lib/types";
 
 const allAthletes = results as AthleteResult[];
 const raceData = race as RaceMetadata;
@@ -42,11 +42,7 @@ export function generateMetadata({
     }
     const timeStr = athlete.totalTime ? ` - ${athlete.totalTime}` : "";
     const statusStr =
-      athlete.status === "DNF"
-        ? " (DNF)"
-        : athlete.status === "DNS"
-          ? " (DNS)"
-          : "";
+      athlete.status === "DNF" ? " (DNF)" : athlete.status === "DNS" ? " (DNS)" : "";
     const title = `${athlete.name} No.${athlete.no}${timeStr}${statusStr} | しろさとTT200`;
     const rankStr = typeof athlete.rank === "number" ? `総合${athlete.rank}位` : athlete.status;
     const desc = athlete.totalTime
@@ -81,15 +77,9 @@ export function generateMetadata({
   });
 }
 
-function getCategoryAvgLaps(
-  category: string,
-  maxLaps: number
-): number[] {
+function getCategoryAvgLaps(category: string, maxLaps: number): number[] {
   const finished = allAthletes.filter(
-    (a) =>
-      a.category === category &&
-      a.status === "finished" &&
-      a.lapTimes.length > 0
+    (a) => a.category === category && a.status === "finished" && a.lapTimes.length > 0,
   );
 
   const avgLaps: number[] = [];
@@ -105,11 +95,7 @@ function getCategoryAvgLaps(
   return avgLaps;
 }
 
-export default async function AthletePage({
-  params,
-}: {
-  params: Promise<{ no: string }>;
-}) {
+export default async function AthletePage({ params }: { params: Promise<{ no: string }> }) {
   const { no } = await params;
   const athlete = allAthletes.find((a) => a.no === Number(no));
 
@@ -128,18 +114,14 @@ export default async function AthletePage({
     );
   }
 
-  const categoryAthletes = allAthletes.filter(
-    (a) => a.category === athlete.category
-  );
+  const categoryAthletes = allAthletes.filter((a) => a.category === athlete.category);
   const finishedInCategory = categoryAthletes.filter(
-    (a) => a.status === "finished" || a.status === "OPEN"
+    (a) => a.status === "finished" || a.status === "OPEN",
   );
 
   const categoryRank = { total: finishedInCategory.length };
 
-  const genderFinished = finishedInCategory.filter(
-    (a) => a.gender === athlete.gender
-  );
+  const genderFinished = finishedInCategory.filter((a) => a.gender === athlete.gender);
   let genderRank: { rank: number; total: number } | undefined;
   if (
     typeof athlete.rank === "number" ||
@@ -172,6 +154,29 @@ export default async function AthletePage({
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "ダッシュボード",
+                item: "https://shirosato-tt-2026.teraren.com",
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: `${athlete.name} No.${athlete.no}`,
+                item: `https://shirosato-tt-2026.teraren.com/athletes/${athlete.no}`,
+              },
+            ],
+          }),
+        }}
+      />
       <Link
         href="/"
         className="mb-6 inline-flex items-center gap-1 text-sm text-primary hover:underline"
@@ -203,10 +208,7 @@ export default async function AthletePage({
           <>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div className="space-y-6">
-                <SingleLapChart
-                  athlete={athlete}
-                  categoryAvgLaps={categoryAvgLaps}
-                />
+                <SingleLapChart athlete={athlete} categoryAvgLaps={categoryAvgLaps} />
                 <LapStability athlete={athlete} />
               </div>
               <div className="space-y-6">
@@ -225,20 +227,11 @@ export default async function AthletePage({
             <PacingWaterfall athlete={athlete} />
 
             {/* Pace Scatter with highlight */}
-            {isFinished && (
-              <PaceScatter category={athlete.category} highlightNo={athlete.no} />
-            )}
+            {isFinished && <PaceScatter category={athlete.category} highlightNo={athlete.no} />}
 
-            {isFinished && (
-              <PercentileBar
-                athlete={athlete}
-                categoryAthletes={categoryAthletes}
-              />
-            )}
+            {isFinished && <PercentileBar athlete={athlete} categoryAthletes={categoryAthletes} />}
 
-            {isFinished && (
-              <CdACalculator athlete={athlete} race={raceData} />
-            )}
+            {isFinished && <CdACalculator athlete={athlete} race={raceData} />}
           </>
         )}
 
